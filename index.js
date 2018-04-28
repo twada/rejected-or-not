@@ -2,6 +2,11 @@ function doesNotReject () {
 }
 
 function rejects (block, error, message) {
+    if (isPromiseLike(block)) {
+        return new Promise((resolve, reject) => {
+            block.then(reject, resolve);
+        });
+    }
     try {
         var ret = block();
         if (isPromiseLike(ret)) {

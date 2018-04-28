@@ -20,6 +20,11 @@ function shouldNotBeRejected (args) {
 }
 
 describe('#rejects', function () {
+    it('Awaits the block promise then check that the promise is rejected.', function () {
+        return rejects(willReject(100, 'BOMB!')).then(function () {
+            assert(true);
+        }, shouldNotBeRejected);
+    });
     it('if block is a function, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
         return rejects(function () {
             return willReject(100, 'BOMB!');

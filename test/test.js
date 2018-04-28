@@ -16,4 +16,12 @@ describe('#rejects', function () {
             assert(err.message === 'synchronous error');
         });
     });
+    it('If the function does not return a promise, assert.rejects() will return a rejected Promise with an ERR_INVALID_RETURN_VALUE error.', function () {
+        return rejects(function () {
+            return 'not a Promise';
+        }).then(shouldNotBeHere, function (err) {
+            assert(err instanceof TypeError);
+            assert(err.code === 'ERR_INVALID_RETURN_VALUE');
+        });
+    });
 });

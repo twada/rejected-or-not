@@ -25,9 +25,9 @@ function rejects (block, error, message) {
 
 function isPromiseLike (obj) {
   return obj !== null &&
-        typeof obj === 'object' &&
-        typeof obj.then === 'function' &&
-        typeof obj.catch === 'function';
+    typeof obj === 'object' &&
+    typeof obj.then === 'function' &&
+    typeof obj.catch === 'function';
 }
 
 doesNotReject.rejects = rejects;

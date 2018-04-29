@@ -1,7 +1,13 @@
 delete require.cache[require.resolve('..')];
 var doesNotReject = require('..');
-var rejects = doesNotReject.rejects;
 var assert = require('assert');
+
+var subjects = [
+    {name: 'npm module', rejects: doesNotReject.rejects}
+];
+if (typeof assert.rejects === 'function') {
+    subjects.push({name: 'official implementation', rejects: assert.rejects});
+}
 
 function willReject (millis, value) {
     return new Promise((resolve, reject) => {
@@ -19,7 +25,11 @@ function shouldNotBeRejected (args) {
   assert(false, 'should not be rejected: ' + args);
 }
 
-describe('#rejects', function () {
+subjects.forEach(function (subject) {
+    var name = subject.name;
+    var rejects = subject.rejects;
+
+describe(name + ' #rejects', function () {
     it('Awaits the block promise then check that the promise is rejected.', function () {
         return rejects(willReject(100, 'BOMB!')).then(function () {
             assert(true);
@@ -48,4 +58,6 @@ describe('#rejects', function () {
             assert(err.code === 'ERR_INVALID_RETURN_VALUE');
         });
     });
+});
+
 });

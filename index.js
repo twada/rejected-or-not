@@ -36,18 +36,24 @@ function wantReject (thennable, stackStartFn, errorHandler) {
         message: 'Missing expected rejection.',
         stackStartFn: stackStartFn
       }));
-    }, function (expectedRejectionResult) {
+    }, function (actualRejectionResult) {
       if (!errorHandler) {
         return resolve();
       }
       if (errorHandler instanceof RegExp) {
-        if (errorHandler.test(expectedRejectionResult)) {
+        if (errorHandler.test(actualRejectionResult)) {
           return resolve();
         } else {
-          return reject(expectedRejectionResult);
+          return reject(actualRejectionResult);
         }
       }
-      return reject(expectedRejectionResult);
+      if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
+        return resolve();
+      }
+      if (Error.isPrototypeOf(errorHandler)) {
+        return reject(actualRejectionResult);
+      }
+      return reject(actualRejectionResult);
     });
   });
 }

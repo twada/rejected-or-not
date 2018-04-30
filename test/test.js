@@ -130,6 +130,25 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when <Class>, validate instanceof using constructor', function () {
+          it('when rejected error is an instanceof <Class>, resolves with undefined', function () {
+            return rejects(
+              willReject(100, new TypeError('Wrong type')),
+              Error
+            ).then(function (nothing) {
+              assert(nothing === undefined);
+            }, shouldNotBeRejected);
+          });
+          it('when rejected error is NOT an instanceof <Class>, rejects with the original error', function () {
+            return rejects(
+              willReject(100, new Error('the original error message')),
+              TypeError
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert.equal(err.message, 'the original error message');
+            });
+          });
+        });
       });
     });
   });

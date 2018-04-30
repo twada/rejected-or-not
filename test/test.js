@@ -10,16 +10,16 @@ if (typeof assert.rejects === 'function') {
 }
 
 function willReject (millis, value) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       reject(value);
     }, millis);
   });
 }
 
 function willResolve (millis, value) {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
       resolve(value);
     }, millis);
   });

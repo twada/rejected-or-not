@@ -4,6 +4,11 @@ function doesNotReject () {
 }
 
 function rejects (block, error, message) {
+  if (!(typeof block === 'function' || isPromiseLike(block))) {
+    var te = new TypeError('The "block" argument must be one of type Function or Promise. Received type ' + typeof block);
+    te.code = 'ERR_INVALID_ARG_TYPE';
+    return Promise.reject(te);
+  }
   if (isPromiseLike(block)) {
     return wantReject(block, rejects, error);
   }

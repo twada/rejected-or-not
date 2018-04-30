@@ -172,6 +172,19 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when <Object>, that is an object where each property will be tested for', function () {
+          it('when all existing key-value pairs are the same, resolves with undefined', function () {
+            return rejects(
+              willReject(new TypeError('Wrong type')),
+              {
+                name: 'TypeError',
+                message: 'Wrong type'
+              }
+            ).then(function (nothing) {
+              assert(nothing === undefined);
+            }, shouldNotBeRejected);
+          });
+        });
       });
     });
   });

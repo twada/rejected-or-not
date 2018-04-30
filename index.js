@@ -1,4 +1,5 @@
 var AssertionError = require('assert').AssertionError;
+var deepStrictEqual = require('universal-deep-strict-equal');
 
 function doesNotReject () {
 }
@@ -58,6 +59,14 @@ function wantReject (thennable, stackStartFn, errorHandler) {
           return resolve();
         } else {
           return reject(actualRejectionResult);
+        }
+      }
+      if (typeof errorHandler === 'object') {
+        var diffs = Object.keys(errorHandler).filter(function (key) {
+          return !deepStrictEqual(actualRejectionResult[key], errorHandler[key]);
+        });
+        if (diffs.length === 0) {
+          return resolve();
         }
       }
       return reject(actualRejectionResult);

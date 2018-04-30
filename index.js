@@ -8,7 +8,7 @@ function rejects (block, error, message) {
   if (isPromiseLike(block)) {
     return new Promise((resolve, reject) => {
       block.then(function () {
-        reject(new AssertionError({
+        return reject(new AssertionError({
           actual: undefined,
           expected: error,
           operator: stackStartFn.name,
@@ -22,7 +22,15 @@ function rejects (block, error, message) {
     var ret = block();
     if (isPromiseLike(ret)) {
       return new Promise((resolve, reject) => {
-        ret.then(reject, resolve);
+        ret.then(function () {
+          return reject(new AssertionError({
+            actual: undefined,
+            expected: error,
+            operator: stackStartFn.name,
+            message: 'Missing expected rejection.',
+            stackStartFn: stackStartFn
+          }));
+        }, resolve);
       });
     } else {
       var newError = new TypeError('function does not return a promise');

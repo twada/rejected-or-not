@@ -44,6 +44,14 @@ subjects.forEach(function (subject) {
         assert.equal(err.message, 'Missing expected rejection.');
       });
     });
+    it('rejects with AssertionError if result of block function is not rejected.', function () {
+      return rejects(function () {
+        return willResolve(100, 'GOOD!');
+      }).then(shouldNotBeFulfilled, function (err) {
+        assert(err instanceof assert.AssertionError);
+        assert.equal(err.message, 'Missing expected rejection.');
+      });
+    });
     it('Awaits the block promise then check that the promise is rejected.', function () {
       return rejects(willReject(100, 'BOMB!')).then(function () {
         assert(true);

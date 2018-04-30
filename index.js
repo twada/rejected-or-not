@@ -4,34 +4,13 @@ function doesNotReject () {
 }
 
 function rejects (block, error, message) {
-  var stackStartFn = rejects;
   if (isPromiseLike(block)) {
-    return new Promise((resolve, reject) => {
-      block.then(function () {
-        return reject(new AssertionError({
-          actual: undefined,
-          expected: error,
-          operator: stackStartFn.name,
-          message: 'Missing expected rejection.',
-          stackStartFn: stackStartFn
-        }));
-      }, resolve);
-    });
+    return wantReject(block, rejects, error);
   }
   try {
     var ret = block();
     if (isPromiseLike(ret)) {
-      return new Promise((resolve, reject) => {
-        ret.then(function () {
-          return reject(new AssertionError({
-            actual: undefined,
-            expected: error,
-            operator: stackStartFn.name,
-            message: 'Missing expected rejection.',
-            stackStartFn: stackStartFn
-          }));
-        }, resolve);
-      });
+      return wantReject(ret, rejects, error);
     } else {
       var newError = new TypeError('function does not return a promise');
       newError.code = 'ERR_INVALID_RETURN_VALUE';
@@ -40,6 +19,20 @@ function rejects (block, error, message) {
   } catch (e) {
     return Promise.reject(e);
   }
+}
+
+function wantReject (thennable, stackStartFn, error) {
+  return new Promise((resolve, reject) => {
+    thennable.then(function () {
+      return reject(new AssertionError({
+        actual: undefined,
+        expected: error,
+        operator: stackStartFn.name,
+        message: 'Missing expected rejection.',
+        stackStartFn: stackStartFn
+      }));
+    }, resolve);
+  });
 }
 
 function isPromiseLike (obj) {

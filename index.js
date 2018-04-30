@@ -56,6 +56,8 @@ function wantReject (thennable, stackStartFn, errorHandler) {
         }
         if (errorHandler.call({}, actualRejectionResult) === true) {
           return resolve();
+        } else {
+          return reject(actualRejectionResult);
         }
       }
       return reject(actualRejectionResult);

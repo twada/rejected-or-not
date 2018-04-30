@@ -160,6 +160,17 @@ subjects.forEach(function (subject) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
+          it('when returned value of validation function is NOT `true`, rejects with the original error', function () {
+            return rejects(
+              willReject(100, new Error('the original error message')),
+              function (err) {
+                return ((err instanceof TypeError) && /type/.test(err));
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert.equal(err.message, 'the original error message');
+            });
+          });
         });
       });
     });

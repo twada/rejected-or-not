@@ -37,47 +37,55 @@ subjects.forEach(function (subject) {
   var name = subject.name;
   var rejects = subject.rejects;
 
-  describe(name + ' #rejects', function () {
-    it('rejects with AssertionError if the block promise is not rejected.', function () {
-      return rejects(willResolve(100, 'GOOD!')).then(shouldNotBeFulfilled, function (err) {
-        assert(err instanceof assert.AssertionError);
-        assert.equal(err.message, 'Missing expected rejection.');
-      });
-    });
-    it('rejects with AssertionError if result of block function is not rejected.', function () {
-      return rejects(function () {
-        return willResolve(100, 'GOOD!');
-      }).then(shouldNotBeFulfilled, function (err) {
-        assert(err instanceof assert.AssertionError);
-        assert.equal(err.message, 'Missing expected rejection.');
-      });
-    });
-    it('Awaits the block promise then check that the promise is rejected.', function () {
-      return rejects(willReject(100, 'BOMB!')).then(function () {
-        assert(true);
-      }, shouldNotBeRejected);
-    });
-    it('if block is a function, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
-      return rejects(function () {
-        return willReject(100, 'BOMB!');
-      }).then(function () {
-        assert(true);
-      }, shouldNotBeRejected);
-    });
-    it('If block is a function and it throws an error synchronously, assert.rejects() will return a rejected Promise with that error.', function () {
-      return rejects(function () {
-        throw new Error('synchronous error');
-      }).then(shouldNotBeFulfilled, function (err) {
-        assert(err instanceof Error);
-        assert(err.message === 'synchronous error');
-      });
-    });
-    it('If the function does not return a promise, assert.rejects() will return a rejected Promise with an ERR_INVALID_RETURN_VALUE error.', function () {
-      return rejects(function () {
-        return 'not a Promise';
-      }).then(shouldNotBeFulfilled, function (err) {
-        assert(err instanceof TypeError);
-        assert(err.code === 'ERR_INVALID_RETURN_VALUE');
+  describe(name, function () {
+    describe('#rejects', function () {
+      describe('block', function () {
+        describe('<Promise>', function () {
+          it('rejects with AssertionError if the block promise is not rejected.', function () {
+            return rejects(willResolve(100, 'GOOD!')).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection.');
+            });
+          });
+          it('Awaits the block promise then check that the promise is rejected.', function () {
+            return rejects(willReject(100, 'BOMB!')).then(function () {
+              assert(true);
+            }, shouldNotBeRejected);
+          });
+        });
+        describe('<Function>', function () {
+          it('rejects with AssertionError if result of block function is not rejected.', function () {
+            return rejects(function () {
+              return willResolve(100, 'GOOD!');
+            }).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection.');
+            });
+          });
+          it('if block is a function, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
+            return rejects(function () {
+              return willReject(100, 'BOMB!');
+            }).then(function () {
+              assert(true);
+            }, shouldNotBeRejected);
+          });
+          it('If block is a function and it throws an error synchronously, assert.rejects() will return a rejected Promise with that error.', function () {
+            return rejects(function () {
+              throw new Error('synchronous error');
+            }).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert(err.message === 'synchronous error');
+            });
+          });
+          it('If the function does not return a promise, assert.rejects() will return a rejected Promise with an ERR_INVALID_RETURN_VALUE error.', function () {
+            return rejects(function () {
+              return 'not a Promise';
+            }).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_RETURN_VALUE');
+            });
+          });
+        });
       });
     });
   });

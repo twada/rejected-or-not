@@ -39,8 +39,8 @@ subjects.forEach(function (subject) {
 
   describe(name, function () {
     describe('#rejects', function () {
-      describe('block', function () {
-        describe('<Promise>', function () {
+      describe('block argument', function () {
+        describe('when <Promise>', function () {
           it('rejects with AssertionError if the block promise is not rejected.', function () {
             return rejects(willResolve(100, 'GOOD!')).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
@@ -53,7 +53,7 @@ subjects.forEach(function (subject) {
             }, shouldNotBeRejected);
           });
         });
-        describe('<Function>', function () {
+        describe('when <Function>', function () {
           it('rejects with AssertionError if result of block function is not rejected.', function () {
             return rejects(function () {
               return willResolve(100, 'GOOD!');
@@ -86,7 +86,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('types other than Promise or Function', function () {
+        describe('when types other than Promise or Function', function () {
           it('string', function () {
             return rejects('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
@@ -106,6 +106,27 @@ subjects.forEach(function (subject) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
               assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type object');
+            });
+          });
+        });
+      });
+      describe('[error] argument', function () {
+        describe('when <RegExp>, validate error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
+          it('when message matches, resolves with undefined', function () {
+            return rejects(
+              willReject(100, new Error('Wrong value')),
+              /^Error: Wrong value$/
+            ).then(function (nothing) {
+              assert(nothing === undefined);
+            }, shouldNotBeRejected);
+          });
+          it('when messages does not match, rejects with the original error', function () {
+            return rejects(
+              willReject(100, new Error('the original error message')),
+              /^will not match$/
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert.equal(err.message, 'the original error message');
             });
           });
         });

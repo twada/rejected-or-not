@@ -26,17 +26,29 @@ function rejects (block, error, message) {
   }
 }
 
-function wantReject (thennable, stackStartFn, error) {
+function wantReject (thennable, stackStartFn, errorHandler) {
   return new Promise((resolve, reject) => {
     thennable.then(function () {
       return reject(new AssertionError({
         actual: undefined,
-        expected: error,
+        expected: errorHandler,
         operator: stackStartFn.name,
         message: 'Missing expected rejection.',
         stackStartFn: stackStartFn
       }));
-    }, resolve);
+    }, function (expectedRejectionResult) {
+      if (!errorHandler) {
+        return resolve();
+      }
+      if (errorHandler instanceof RegExp) {
+        if (errorHandler.test(expectedRejectionResult)) {
+          return resolve();
+        } else {
+          return reject(expectedRejectionResult);
+        }
+      }
+      return reject(expectedRejectionResult);
+    });
   });
 }
 

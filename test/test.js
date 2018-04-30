@@ -9,19 +9,19 @@ if (typeof assert.rejects === 'function') {
   subjects.push({name: 'official implementation', rejects: assert.rejects});
 }
 
-function willReject (millis, value) {
+function willReject (value) {
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
       reject(value);
-    }, millis);
+    }, 10);
   });
 }
 
-function willResolve (millis, value) {
+function willResolve (value) {
   return new Promise(function (resolve, reject) {
     setTimeout(function () {
       resolve(value);
-    }, millis);
+    }, 10);
   });
 }
 
@@ -42,13 +42,13 @@ subjects.forEach(function (subject) {
       describe('block argument', function () {
         describe('when <Promise>', function () {
           it('rejects with AssertionError if the block promise is not rejected.', function () {
-            return rejects(willResolve(100, 'GOOD!')).then(shouldNotBeFulfilled, function (err) {
+            return rejects(willResolve('GOOD!')).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection.');
             });
           });
           it('Awaits the block promise then check that the promise is rejected.', function () {
-            return rejects(willReject(100, 'BOMB!')).then(function () {
+            return rejects(willReject('BOMB!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
@@ -56,7 +56,7 @@ subjects.forEach(function (subject) {
         describe('when <Function>', function () {
           it('rejects with AssertionError if result of block function is not rejected.', function () {
             return rejects(function () {
-              return willResolve(100, 'GOOD!');
+              return willResolve('GOOD!');
             }).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection.');
@@ -64,7 +64,7 @@ subjects.forEach(function (subject) {
           });
           it('if block is a function, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
             return rejects(function () {
-              return willReject(100, 'BOMB!');
+              return willReject('BOMB!');
             }).then(function () {
               assert(true);
             }, shouldNotBeRejected);
@@ -114,7 +114,7 @@ subjects.forEach(function (subject) {
         describe('when <RegExp>, validate error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
           it('when message matches, resolves with undefined', function () {
             return rejects(
-              willReject(100, new Error('Wrong value')),
+              willReject(new Error('Wrong value')),
               /^Error: Wrong value$/
             ).then(function (nothing) {
               assert(nothing === undefined);
@@ -122,7 +122,7 @@ subjects.forEach(function (subject) {
           });
           it('when messages does not match, rejects with the original error', function () {
             return rejects(
-              willReject(100, new Error('the original error message')),
+              willReject(new Error('the original error message')),
               /^will not match$/
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof Error);
@@ -133,7 +133,7 @@ subjects.forEach(function (subject) {
         describe('when <Class>, validate instanceof using constructor', function () {
           it('when rejected error is an instanceof <Class>, resolves with undefined', function () {
             return rejects(
-              willReject(100, new TypeError('Wrong type')),
+              willReject(new TypeError('Wrong type')),
               Error
             ).then(function (nothing) {
               assert(nothing === undefined);
@@ -141,7 +141,7 @@ subjects.forEach(function (subject) {
           });
           it('when rejected error is NOT an instanceof <Class>, rejects with the original error', function () {
             return rejects(
-              willReject(100, new Error('the original error message')),
+              willReject(new Error('the original error message')),
               TypeError
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof Error);
@@ -152,7 +152,7 @@ subjects.forEach(function (subject) {
         describe('when <Function>, run custom validation against rejection result', function () {
           it('when validation function returns `true`, resolves with undefined', function () {
             return rejects(
-              willReject(100, new Error('Wrong value')),
+              willReject(new Error('Wrong value')),
               function (err) {
                 return ((err instanceof Error) && /value/.test(err));
               }
@@ -162,7 +162,7 @@ subjects.forEach(function (subject) {
           });
           it('when returned value of validation function is NOT `true`, rejects with the original error', function () {
             return rejects(
-              willReject(100, new Error('the original error message')),
+              willReject(new Error('the original error message')),
               function (err) {
                 return ((err instanceof TypeError) && /type/.test(err));
               }

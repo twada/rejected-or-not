@@ -1,10 +1,21 @@
+var AssertionError = require('assert').AssertionError;
+
 function doesNotReject () {
 }
 
 function rejects (block, error, message) {
+  var stackStartFn = rejects;
   if (isPromiseLike(block)) {
     return new Promise((resolve, reject) => {
-      block.then(reject, resolve);
+      block.then(function () {
+        reject(new AssertionError({
+          actual: undefined,
+          expected: error,
+          operator: stackStartFn.name,
+          message: 'Missing expected rejection.',
+          stackStartFn: stackStartFn
+        }));
+      }, resolve);
     });
   }
   try {

@@ -17,6 +17,14 @@ function willReject (millis, value) {
   });
 }
 
+function willResolve (millis, value) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(value);
+    }, millis);
+  });
+}
+
 function shouldNotBeFulfilled (args) {
   assert(false, 'should not be fulfilled: ' + args);
 }
@@ -30,6 +38,12 @@ subjects.forEach(function (subject) {
   var rejects = subject.rejects;
 
   describe(name + ' #rejects', function () {
+    it('rejects with AssertionError if the block promise is not rejected.', function () {
+      return rejects(willResolve(100, 'GOOD!')).then(shouldNotBeFulfilled, function (err) {
+        assert(err instanceof assert.AssertionError);
+        assert.equal(err.message, 'Missing expected rejection.');
+      });
+    });
     it('Awaits the block promise then check that the promise is rejected.', function () {
       return rejects(willReject(100, 'BOMB!')).then(function () {
         assert(true);

@@ -149,6 +149,18 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when <Function>, run custom validation against rejection result', function () {
+          it('when validation function returns `true`, resolves with undefined', function () {
+            return rejects(
+              willReject(100, new Error('Wrong value')),
+              function (err) {
+                return ((err instanceof Error) && /value/.test(err));
+              }
+            ).then(function (nothing) {
+              assert(nothing === undefined);
+            }, shouldNotBeRejected);
+          });
+        });
       });
     });
   });

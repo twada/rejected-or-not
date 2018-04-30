@@ -47,11 +47,16 @@ function wantReject (thennable, stackStartFn, errorHandler) {
           return reject(actualRejectionResult);
         }
       }
-      if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
-        return resolve();
-      }
-      if (Error.isPrototypeOf(errorHandler)) {
-        return reject(actualRejectionResult);
+      if (typeof errorHandler === 'function') {
+        if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
+          return resolve();
+        }
+        if (Error.isPrototypeOf(errorHandler)) {
+          return reject(actualRejectionResult);
+        }
+        if (errorHandler.call({}, actualRejectionResult) === true) {
+          return resolve();
+        }
       }
       return reject(actualRejectionResult);
     });

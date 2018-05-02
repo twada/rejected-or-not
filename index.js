@@ -53,10 +53,10 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
       if (typeof errorHandler === 'string') {
         if (typeof actualRejectionResult === 'object' && actualRejectionResult !== null) {
           if (actualRejectionResult.message === errorHandler) {
-            var te = new TypeError('The "error/message" argument is ambiguous. The error message "' + errorHandler + '" is identical to the message.');
-            te.code = 'ERR_AMBIGUOUS_ARGUMENT';
-            return reject(te);
+            return reject(createAmbiguousArgumentError('message "' + errorHandler + '"'));
           }
+        } else if (actualRejectionResult === errorHandler) {
+          return reject(createAmbiguousArgumentError('"' + errorHandler + '"'));
         }
       }
       if (errorHandler instanceof RegExp) {
@@ -111,6 +111,12 @@ function isPromiseLike (obj) {
     typeof obj === 'object' &&
     typeof obj.then === 'function' &&
     typeof obj.catch === 'function';
+}
+
+function createAmbiguousArgumentError (msg) {
+  var te = new TypeError('The "error/message" argument is ambiguous. The error ' + msg + ' is identical to the message.');
+  te.code = 'ERR_AMBIGUOUS_ARGUMENT';
+  return te;
 }
 
 function rejectWithInvalidArgType (argName, typeNames, actualArg) {

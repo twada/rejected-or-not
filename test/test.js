@@ -300,6 +300,16 @@ subjects.forEach(function (subject) {
                 assert.equal(err.message, 'The "error/message" argument is ambiguous. The error message "Wrong type" is identical to the message.');
               });
             });
+            it('and is identical to the actual rejected object, throw TypeError with code ERR_AMBIGUOUS_ARGUMENT', function () {
+              return rejects(
+                willReject('Rejection Reason'),
+                'Rejection Reason'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof TypeError);
+                assert(err.code === 'ERR_AMBIGUOUS_ARGUMENT');
+                assert.equal(err.message, 'The "error/message" argument is ambiguous. The error "Rejection Reason" is identical to the message.');
+              });
+            });
           });
         });
       });

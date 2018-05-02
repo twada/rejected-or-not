@@ -80,7 +80,7 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
           return reject(new AssertionError({
             actual: actualRejectionResult,
             expected: errorHandler,
-            message: createComparisonMessage(actualRejectionResult, errorHandler, expectedKeys, stackStartFn),
+            message: message || createComparisonMessage(actualRejectionResult, errorHandler, expectedKeys, stackStartFn),
             operator: stackStartFn.name,
             stackStartFn: stackStartFn
           }));

@@ -292,6 +292,35 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('`message` argument is also used with `error` of type <Object> or <Error>', function () {
+          it('when `error` is an <Object> and comparison fails, rejects AssertionError with specified failure message', function () {
+            var te = new TypeError('Wrong type');
+            te.code = 'ERR_INVALID_ARG_TYPE';
+            return rejects(
+              willReject(te),
+              {
+                code: 'ERR_INVALID_RETURN_VALUE'
+              },
+              'rejected error must have code ERR_INVALID_RETURN_VALUE'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === te);
+              assert.equal(err.message, 'rejected error must have code ERR_INVALID_RETURN_VALUE');
+            });
+          });
+          it('when `error` is an <Error> and comparison fails, rejects AssertionError with specified failure message', function () {
+            var e = new Error('Wrong value');
+            return rejects(
+              willReject(e),
+              new TypeError('Wrong type'),
+              'rejected error must be TypeError with message `Wrong type`'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === e);
+              assert.equal(err.message, 'rejected error must be TypeError with message `Wrong type`');
+            });
+          });
+        });
       });
     });
   });

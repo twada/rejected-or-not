@@ -28,7 +28,7 @@ function rejects (block, error, message) {
 }
 
 function wantReject (thennable, stackStartFn, errorHandler) {
-  return new Promise((resolve, reject) => {
+  return new Promise(function (resolve, reject) {
     thennable.then(function () {
       return reject(new AssertionError({
         actual: undefined,

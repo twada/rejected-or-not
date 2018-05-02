@@ -30,11 +30,15 @@ function rejects (block, error, message) {
 function wantReject (thennable, stackStartFn, errorHandler) {
   return new Promise(function (resolve, reject) {
     thennable.then(function () {
+      var expectedErrorClassName = '';
+      if (errorHandler && errorHandler.name) {
+        expectedErrorClassName += ' (' + errorHandler.name + ')';
+      }
       return reject(new AssertionError({
         actual: undefined,
         expected: errorHandler,
         operator: stackStartFn.name,
-        message: 'Missing expected rejection.',
+        message: 'Missing expected rejection' + expectedErrorClassName + '.',
         stackStartFn: stackStartFn
       }));
     }, function (actualRejectionResult) {

@@ -148,6 +148,15 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
+          it('appends `<Class>.name` as expected error class name to the message if the `block` is not rejected.', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              TypeError
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection (TypeError).');
+            });
+          });
         });
         describe('when <Function>, run custom validation against rejection result', function () {
           it('when validation function returns `true`, resolves with undefined', function () {
@@ -214,6 +223,18 @@ subjects.forEach(function (subject) {
               assert(err.actual === te);
             });
           });
+          it('appends `<Object>.name` as expected error class name to the message if the `block` is not rejected.', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              {
+                name: 'TypeError',
+                code: 'ERR_INVALID_ARG_TYPE'
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection (TypeError).');
+            });
+          });
         });
         describe('when <Error>, that is an instance of error where each property will be tested for including the non-enumerable message and name properties.', function () {
           it('when all key-value pairs in errorHandler (error instance in this case) are the same as actual rejected error, resolves with undefined. Note that only properties on the errorHandler object will be tested.', function () {
@@ -235,6 +256,15 @@ subjects.forEach(function (subject) {
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === otherErr);
+            });
+          });
+          it('appends `<Error>.name` as expected error class name to the message if the `block` is not rejected.', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              new TypeError('Wrong type')
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection (TypeError).');
             });
           });
         });

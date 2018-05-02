@@ -269,6 +269,17 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('Note that `error` cannot be a string.', function () {
+          it('If a string is provided as the second argument, then `error` is assumed to be omitted and the string will be used for `message` instead. This can lead to easy-to-miss mistakes.', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              'This can lead to easy-to-miss mistakes.'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection: This can lead to easy-to-miss mistakes.');
+            });
+          });
+        });
       });
       describe('[message] argument', function () {
         describe('If specified, message will be the message provided by the AssertionError if the block fails to reject.', function () {

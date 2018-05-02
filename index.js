@@ -10,6 +10,11 @@ function rejects (block, error, message) {
     te.code = 'ERR_INVALID_ARG_TYPE';
     return Promise.reject(te);
   }
+  // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
+  if (typeof error === 'string' && arguments.length === 2) {
+    message = error;
+    error = undefined;
+  }
   if (isPromiseLike(block)) {
     return wantReject(rejects, block, error, message);
   }

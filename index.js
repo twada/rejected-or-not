@@ -63,6 +63,10 @@ function wantReject (thennable, stackStartFn, errorHandler) {
       }
       if (typeof errorHandler === 'object') {
         var expectedKeys = Object.keys(errorHandler);
+        if (errorHandler instanceof Error) {
+          // an instance of error where each property will be tested for including the non-enumerable message and name properties
+          expectedKeys.push('name', 'message');
+        }
         var differs = expectedKeys.some(function (key) {
           return !(key in actualRejectionResult) ||
             !deepStrictEqual(actualRejectionResult[key], errorHandler[key]);

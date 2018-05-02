@@ -186,7 +186,7 @@ subjects.forEach(function (subject) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
-          it('when some of the values are not same, rejects with AssertionError', function () {
+          it('when some of the properties are not same, rejects with AssertionError', function () {
             var te = new TypeError('Wrong type');
             te.code = 'ERR_INVALID_ARG_TYPE';
             return rejects(
@@ -212,6 +212,29 @@ subjects.forEach(function (subject) {
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === te);
+            });
+          });
+        });
+        describe('when <Error>, that is an instance of error where each property will be tested for including the non-enumerable message and name properties.', function () {
+          it('when all key-value pairs in errorHandler (error instance in this case) are the same as actual rejected error, resolves with undefined. Note that only properties on the errorHandler object will be tested.', function () {
+            var te = new TypeError('Wrong type');
+            te.code = 'ERR_INVALID_ARG_TYPE';
+            return rejects(
+              willReject(te),
+              new TypeError('Wrong type')
+            ).then(function (nothing) {
+              assert(nothing === undefined);
+            }, shouldNotBeRejected);
+          });
+          it('when some of the properties are not same, rejects with AssertionError', function () {
+            var otherErr = new Error('Not found');
+            otherErr.code = 404;
+            return rejects(
+              willReject(otherErr),
+              new TypeError('Wrong type')
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === otherErr);
             });
           });
         });

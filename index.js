@@ -62,10 +62,20 @@ function wantReject (thennable, stackStartFn, errorHandler) {
         }
       }
       if (typeof errorHandler === 'object') {
-        var diffs = Object.keys(errorHandler).filter(function (key) {
-          return !deepStrictEqual(actualRejectionResult[key], errorHandler[key]);
+        var expectedKeys = Object.keys(errorHandler);
+        var differs = expectedKeys.some(function (key) {
+          return !(key in actualRejectionResult) ||
+            !deepStrictEqual(actualRejectionResult[key], errorHandler[key]);
         });
-        if (diffs.length === 0) {
+        if (differs) {
+          return reject(new AssertionError({
+            actual: actualRejectionResult,
+            expected: errorHandler,
+            message: createComparisonMessage(actualRejectionResult, errorHandler, expectedKeys, stackStartFn),
+            operator: stackStartFn.name,
+            stackStartFn: stackStartFn
+          }));
+        } else {
           return resolve();
         }
       }
@@ -79,6 +89,31 @@ function isPromiseLike (obj) {
     typeof obj === 'object' &&
     typeof obj.then === 'function' &&
     typeof obj.catch === 'function';
+}
+
+function comparison (obj, keys) {
+  var dest = {};
+  keys.forEach(function (key) {
+    if (key in obj) {
+      dest[key] = obj[key];
+    }
+  });
+  return dest;
+}
+
+function createComparisonMessage (actual, expected, keys, stackStartFn) {
+  var a = comparison(actual, keys);
+  var b = comparison(expected, keys);
+  var tmpLimit = Error.stackTraceLimit;
+  Error.stackTraceLimit = 0;
+  var err = new AssertionError({
+    actual: a,
+    expected: b,
+    operator: 'deepStrictEqual',
+    stackStartFn: stackStartFn
+  });
+  Error.stackTraceLimit = tmpLimit;
+  return err.message;
 }
 
 doesNotReject.rejects = rejects;

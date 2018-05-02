@@ -173,16 +173,46 @@ subjects.forEach(function (subject) {
           });
         });
         describe('when <Object>, that is an object where each property will be tested for', function () {
-          it('when all existing key-value pairs are the same, resolves with undefined', function () {
+          it('when all key-value pairs in errorHandler are the same as actual rejected result, resolves with undefined. Note that only properties on the error object will be tested.', function () {
+            var te = new TypeError('Wrong type');
+            te.code = 'ERR_INVALID_ARG_TYPE';
             return rejects(
-              willReject(new TypeError('Wrong type')),
+              willReject(te),
               {
                 name: 'TypeError',
-                message: 'Wrong type'
+                code: 'ERR_INVALID_ARG_TYPE'
               }
             ).then(function (nothing) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
+          });
+          it('when some of the values are not same, rejects with AssertionError', function () {
+            var te = new TypeError('Wrong type');
+            te.code = 'ERR_INVALID_ARG_TYPE';
+            return rejects(
+              willReject(te),
+              {
+                name: 'Error',
+                message: 'Wrong type',
+                code: 'ERR_INVALID_RETURN_VALUE'
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === te);
+            });
+          });
+          it('when rejected result does not have property that errorHandler have, rejects with AssertionError', function () {
+            var te = new TypeError('Wrong type');
+            return rejects(
+              willReject(te),
+              {
+                name: 'TypeError',
+                reason: 'Some reason'
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === te);
+            });
           });
         });
       });

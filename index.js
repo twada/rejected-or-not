@@ -11,12 +11,12 @@ function rejects (block, error, message) {
     return Promise.reject(te);
   }
   if (isPromiseLike(block)) {
-    return wantReject(block, rejects, error);
+    return wantReject(rejects, block, error, message);
   }
   try {
     var ret = block();
     if (isPromiseLike(ret)) {
-      return wantReject(ret, rejects, error);
+      return wantReject(rejects, ret, error, message);
     } else {
       var newError = new TypeError('function does not return a promise');
       newError.code = 'ERR_INVALID_RETURN_VALUE';
@@ -27,18 +27,19 @@ function rejects (block, error, message) {
   }
 }
 
-function wantReject (thennable, stackStartFn, errorHandler) {
+function wantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
     thennable.then(function () {
-      var expectedErrorClassName = '';
+      var failureMessage = 'Missing expected rejection';
       if (errorHandler && errorHandler.name) {
-        expectedErrorClassName += ' (' + errorHandler.name + ')';
+        failureMessage += ' (' + errorHandler.name + ')';
       }
+      failureMessage += message ? ': ' + message : '.';
       return reject(new AssertionError({
         actual: undefined,
         expected: errorHandler,
         operator: stackStartFn.name,
-        message: 'Missing expected rejection' + expectedErrorClassName + '.',
+        message: failureMessage,
         stackStartFn: stackStartFn
       }));
     }, function (actualRejectionResult) {

@@ -38,7 +38,7 @@ subjects.forEach(function (subject) {
   var rejects = subject.rejects;
 
   describe(name, function () {
-    describe('#rejects', function () {
+    describe('#rejects(block, [error], [message])', function () {
       describe('block argument', function () {
         describe('when <Promise>', function () {
           it('rejects with AssertionError if the block promise is not rejected.', function () {
@@ -265,6 +265,30 @@ subjects.forEach(function (subject) {
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection (TypeError).');
+            });
+          });
+        });
+      });
+      describe('[message] argument', function () {
+        describe('If specified, message will be the message provided by the AssertionError if the block fails to reject.', function () {
+          it('with expected error class name (when `error` is one of <Class>, <Error> or <Object> with name property)', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              TypeError,
+              'MUST BE REJECTED but resolved'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection (TypeError): MUST BE REJECTED but resolved');
+            });
+          });
+          it('without expected error class name (when `error` is RegExp or Fuction)', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              /Wrong value/,
+              'MUST BE REJECTED but resolved'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection: MUST BE REJECTED but resolved');
             });
           });
         });

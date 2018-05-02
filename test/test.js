@@ -279,6 +279,16 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'Missing expected rejection: This can lead to easy-to-miss mistakes.');
             });
           });
+          it('If a string is provided as the second argument and the third argument is also given, theow TypeError with code ERR_INVALID_ARG_TYPE', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              'This can lead to easy-to-miss mistakes.',
+              'This is clearly a mistake.'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
+            });
+          });
         });
       });
       describe('[message] argument', function () {

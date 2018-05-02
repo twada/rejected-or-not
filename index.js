@@ -6,14 +6,17 @@ function doesNotReject () {
 
 function rejects (block, error, message) {
   if (!(typeof block === 'function' || isPromiseLike(block))) {
-    var te = new TypeError('The "block" argument must be one of type Function or Promise. Received type ' + typeof block);
-    te.code = 'ERR_INVALID_ARG_TYPE';
-    return Promise.reject(te);
+    return rejectWithInvalidArgType('block', 'Function or Promise', block);
   }
   // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
-  if (typeof error === 'string' && arguments.length === 2) {
-    message = error;
-    error = undefined;
+  if (typeof error === 'string') {
+    if (arguments.length === 3) {
+      return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
+    }
+    if (arguments.length === 2) {
+      message = error;
+      error = undefined;
+    }
   }
   if (isPromiseLike(block)) {
     return wantReject(rejects, block, error, message);
@@ -101,6 +104,12 @@ function isPromiseLike (obj) {
     typeof obj === 'object' &&
     typeof obj.then === 'function' &&
     typeof obj.catch === 'function';
+}
+
+function rejectWithInvalidArgType (argName, typeNames, actualArg) {
+  var te = new TypeError('The "' + argName + '" argument must be one of type ' + typeNames + '. Received type ' + typeof actualArg);
+  te.code = 'ERR_INVALID_ARG_TYPE';
+  return Promise.reject(te);
 }
 
 function notReturningPromise (ret) {

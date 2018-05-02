@@ -270,23 +270,35 @@ subjects.forEach(function (subject) {
           });
         });
         describe('Note that `error` cannot be a string.', function () {
-          it('If a string is provided as the second argument, then `error` is assumed to be omitted and the string will be used for `message` instead. This can lead to easy-to-miss mistakes.', function () {
-            return rejects(
-              willResolve('GOOD!'),
-              'This can lead to easy-to-miss mistakes.'
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof assert.AssertionError);
-              assert.equal(err.message, 'Missing expected rejection: This can lead to easy-to-miss mistakes.');
+          describe('If a string is provided as the second argument,', function () {
+            it('then `error` is assumed to be omitted and the string will be used for `message` instead. This can lead to easy-to-miss mistakes.', function () {
+              return rejects(
+                willResolve('GOOD!'),
+                'This can lead to easy-to-miss mistakes.'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert.equal(err.message, 'Missing expected rejection: This can lead to easy-to-miss mistakes.');
+              });
             });
-          });
-          it('If a string is provided as the second argument and the third argument is also given, theow TypeError with code ERR_INVALID_ARG_TYPE', function () {
-            return rejects(
-              willResolve('GOOD!'),
-              'This can lead to easy-to-miss mistakes.',
-              'This is clearly a mistake.'
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof TypeError);
-              assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
+            it('and the third argument is also given, throw TypeError with code ERR_INVALID_ARG_TYPE', function () {
+              return rejects(
+                willResolve('GOOD!'),
+                'This can lead to easy-to-miss mistakes.',
+                'This is clearly a mistake.'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof TypeError);
+                assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
+              });
+            });
+            it('and is identical to the message property of actual rejected error, throw TypeError with code ERR_AMBIGUOUS_ARGUMENT', function () {
+              return rejects(
+                willReject(new TypeError('Wrong type')),
+                'Wrong type'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof TypeError);
+                assert(err.code === 'ERR_AMBIGUOUS_ARGUMENT');
+                assert.equal(err.message, 'The "error/message" argument is ambiguous. The error message "Wrong type" is identical to the message.');
+              });
             });
           });
         });

@@ -8,15 +8,8 @@ function rejects (block, error, message) {
   if (!(typeof block === 'function' || isPromiseLike(block))) {
     return rejectWithInvalidArgType('block', 'Function or Promise', block);
   }
-  // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
-  if (typeof error === 'string') {
-    if (arguments.length === 3) {
-      return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
-    }
-    if (arguments.length === 2) {
-      message = error;
-      error = undefined;
-    }
+  if (typeof error === 'string' && arguments.length === 3) {
+    return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
   }
   if (isPromiseLike(block)) {
     return wantReject(rejects, block, error, message);
@@ -36,6 +29,11 @@ function rejects (block, error, message) {
 function wantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
     thennable.then(function () {
+      // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
+      if (typeof errorHandler === 'string' && typeof message === 'undefined') {
+        message = errorHandler;
+        errorHandler = undefined;
+      }
       var failureMessage = 'Missing expected rejection';
       if (errorHandler && errorHandler.name) {
         failureMessage += ' (' + errorHandler.name + ')';
@@ -51,6 +49,15 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
     }, function (actualRejectionResult) {
       if (!errorHandler) {
         return resolve();
+      }
+      if (typeof errorHandler === 'string') {
+        if (typeof actualRejectionResult === 'object' && actualRejectionResult !== null) {
+          if (actualRejectionResult.message === errorHandler) {
+            var te = new TypeError('The "error/message" argument is ambiguous. The error message "' + errorHandler + '" is identical to the message.');
+            te.code = 'ERR_AMBIGUOUS_ARGUMENT';
+            return reject(te);
+          }
+        }
       }
       if (errorHandler instanceof RegExp) {
         if (errorHandler.test(actualRejectionResult)) {

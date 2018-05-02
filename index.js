@@ -18,9 +18,7 @@ function rejects (block, error, message) {
     if (isPromiseLike(ret)) {
       return wantReject(rejects, ret, error, message);
     } else {
-      var newError = new TypeError('function does not return a promise');
-      newError.code = 'ERR_INVALID_RETURN_VALUE';
-      return Promise.reject(newError);
+      return notReturningPromise(ret);
     }
   } catch (e) {
     return Promise.reject(e);
@@ -98,6 +96,18 @@ function isPromiseLike (obj) {
     typeof obj === 'object' &&
     typeof obj.then === 'function' &&
     typeof obj.catch === 'function';
+}
+
+function notReturningPromise (ret) {
+  var wrongType;
+  if (ret && ret.constructor && ret.constructor.name) {
+    wrongType = 'instance of ' + ret.constructor.name;
+  } else {
+    wrongType = 'type ' + typeof ret;
+  }
+  var e = new TypeError('Expected instance of Promise to be returned from the "block" function but got ' + wrongType + '.');
+  e.code = 'ERR_INVALID_RETURN_VALUE';
+  return Promise.reject(e);
 }
 
 function comparison (obj, keys) {

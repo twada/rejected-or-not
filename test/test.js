@@ -83,6 +83,7 @@ subjects.forEach(function (subject) {
             }).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_RETURN_VALUE');
+              assert.equal(err.message, 'Expected instance of Promise to be returned from the "block" function but got instance of String.');
             });
           });
         });

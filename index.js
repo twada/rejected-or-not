@@ -19,7 +19,7 @@ function rejects (block, error, message) {
     if (isPromiseLike(ret)) {
       return wantReject(rejects, ret, error, message);
     } else {
-      return notReturningPromise(ret);
+      return rejectWithInvalidReturnValue('block', ret);
     }
   } catch (e) {
     return Promise.reject(e);
@@ -128,14 +128,14 @@ function rejectWithInvalidArgType (argName, typeNames, actualArg) {
   return Promise.reject(te);
 }
 
-function notReturningPromise (ret) {
+function rejectWithInvalidReturnValue (fnName, ret) {
   var wrongType;
   if (ret && ret.constructor && ret.constructor.name) {
     wrongType = 'instance of ' + ret.constructor.name;
   } else {
     wrongType = 'type ' + typeof ret;
   }
-  var e = new TypeError('Expected instance of Promise to be returned from the "block" function but got ' + wrongType + '.');
+  var e = new TypeError('Expected instance of Promise to be returned from the "' + fnName + '" function but got ' + wrongType + '.');
   e.code = 'ERR_INVALID_RETURN_VALUE';
   return Promise.reject(e);
 }

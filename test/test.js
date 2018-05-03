@@ -149,6 +149,29 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
+          describe('works well with ES2015 class that extends Error', function () {
+            class ES2015Error extends Error {
+            }
+            class AnotherES2015Error extends Error {
+            }
+            it('match case', function () {
+              return rejects(
+                willReject(new ES2015Error('foo')),
+                ES2015Error
+              ).then(function (nothing) {
+                assert(nothing === undefined);
+              }, shouldNotBeRejected);
+            });
+            it('unmatch case', function () {
+              return rejects(
+                willReject(new AnotherES2015Error('bar')),
+                ES2015Error
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof AnotherES2015Error);
+                assert.equal(err.message, 'bar');
+              });
+            });
+          });
           it('appends `<Class>.name` as expected error class name to the message if the `block` is not rejected.', function () {
             return rejects(
               willResolve('GOOD!'),
@@ -362,6 +385,38 @@ subjects.forEach(function (subject) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === e);
               assert.equal(err.message, 'rejected error must be TypeError with message `Wrong type`');
+            });
+          });
+        });
+        describe('exceptional cases', function () {
+          it('when `error` is null', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              null,
+              'MUST BE REJECTED but resolved'
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection: MUST BE REJECTED but resolved');
+            });
+          });
+          it('when `error` is null and `message` is also null', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              null,
+              null
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection.');
+            });
+          });
+          it('`message` argument accepts <any>', function () {
+            return rejects(
+              willResolve('GOOD!'),
+              null,
+              1234
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert.equal(err.message, 'Missing expected rejection: 1234');
             });
           });
         });

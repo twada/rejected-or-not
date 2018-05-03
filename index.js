@@ -70,6 +70,9 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
           return resolve();
         }
+        // Dealing with ES2015 class that extends Error
+        // see: https://github.com/nodejs/node/issues/3188
+        // see: https://github.com/nodejs/node/pull/4166
         if (Error.isPrototypeOf(errorHandler)) {
           return reject(actualRejectionResult);
         }

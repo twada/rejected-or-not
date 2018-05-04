@@ -4,8 +4,12 @@ var deepStrictEqual = require('universal-deep-strict-equal');
 function doesNotReject (block, error, message) {
   if (isPromiseLike(block)) {
     return doesNotWantReject(doesNotReject, block, error, message);
-  } else {
-    return doesNotWantReject(doesNotReject, block(), error, message);
+  }
+  try {
+    var ret = block();
+    return doesNotWantReject(doesNotReject, ret, error, message);
+  } catch (e) {
+    return Promise.reject(e);
   }
 }
 

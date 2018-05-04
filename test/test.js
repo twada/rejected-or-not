@@ -469,6 +469,14 @@ subjects.forEach(function (subject) {
               assert(true);
             }, shouldNotBeRejected);
           });
+          it('if `block` is a function and it throws an error synchronously, `doesNotReject()` will return a rejected Promise with that error.', function () {
+            return doesNotReject(function () {
+              throw new Error('synchronous error');
+            }).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert(err.message === 'synchronous error');
+            });
+          });
         });
       });
     });

@@ -7,7 +7,11 @@ function doesNotReject (block, error, message) {
   }
   try {
     var ret = block();
-    return doesNotWantReject(doesNotReject, ret, error, message);
+    if (isPromiseLike(ret)) {
+      return doesNotWantReject(doesNotReject, ret, error, message);
+    } else {
+      return rejectWithInvalidReturnValue('block', ret);
+    }
   } catch (e) {
     return Promise.reject(e);
   }

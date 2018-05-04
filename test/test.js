@@ -477,6 +477,15 @@ subjects.forEach(function (subject) {
               assert(err.message === 'synchronous error');
             });
           });
+          it('if the function does not return a promise, `doesNotReject()` will return a rejected Promise with an ERR_INVALID_RETURN_VALUE error.', function () {
+            return doesNotReject(function () {
+              return 'not a Promise';
+            }).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_RETURN_VALUE');
+              assert.equal(err.message, 'Expected instance of Promise to be returned from the "block" function but got instance of String.');
+            });
+          });
         });
       });
     });

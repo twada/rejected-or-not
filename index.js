@@ -165,5 +165,7 @@ function createComparisonMessage (actual, expected, keys, stackStartFn) {
   return err.message;
 }
 
-doesNotReject.rejects = rejects;
-module.exports = doesNotReject;
+module.exports = {
+  rejects: rejects,
+  doesNotReject: doesNotReject
+};

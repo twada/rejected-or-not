@@ -1,9 +1,9 @@
 delete require.cache[require.resolve('..')];
-var doesNotReject = require('..');
+var doesOrDoesNotReject = require('..');
 var assert = require('assert');
 
 var subjects = [
-  {name: 'npm module', rejects: doesNotReject.rejects}
+  {name: 'npm module', rejects: doesOrDoesNotReject.rejects}
 ];
 if (typeof assert.rejects === 'function') {
   subjects.push({name: 'official implementation', rejects: assert.rejects});

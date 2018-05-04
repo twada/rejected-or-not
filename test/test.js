@@ -3,10 +3,18 @@ var doesOrDoesNotReject = require('..');
 var assert = require('assert');
 
 var subjects = [
-  {name: 'npm module', rejects: doesOrDoesNotReject.rejects}
+  {
+    name: 'npm module',
+    rejects: doesOrDoesNotReject.rejects,
+    doesNotReject: doesOrDoesNotReject.doesNotReject
+  }
 ];
 if (typeof assert.rejects === 'function') {
-  subjects.push({name: 'official implementation', rejects: assert.rejects});
+  subjects.push({
+    name: 'official implementation',
+    rejects: assert.rejects,
+    doesNotReject: assert.doesNotReject
+  });
 }
 
 function willReject (value) {
@@ -36,6 +44,7 @@ function shouldNotBeRejected (args) {
 subjects.forEach(function (subject) {
   var name = subject.name;
   var rejects = subject.rejects;
+  var doesNotReject = subject.doesNotReject;
 
   describe(name, function () {
     describe('#rejects(block, [error], [message])', function () {
@@ -418,6 +427,18 @@ subjects.forEach(function (subject) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection: 1234');
             });
+          });
+        });
+      });
+    });
+
+    describe('#doesNotReject(block, [error], [message])', function () {
+      describe('block argument', function () {
+        describe('when <Promise>', function () {
+          it('Awaits the block promise then check that the promise is NOT rejected.', function () {
+            return doesNotReject(willResolve('GOOD!')).then(function () {
+              assert(true);
+            }, shouldNotBeRejected);
           });
         });
       });

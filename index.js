@@ -1,7 +1,16 @@
 var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
 
-function doesNotReject () {
+function doesNotReject (block, error, message) {
+  return doesNotWantReject(rejects, block, error, message);
+}
+
+function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
+  return new Promise(function (resolve, reject) {
+    thennable.then(function () {
+      return resolve();
+    }, function (actualRejectionResult) {});
+  });
 }
 
 function rejects (block, error, message) {

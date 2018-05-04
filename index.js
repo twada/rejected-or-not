@@ -2,6 +2,9 @@ var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
 
 function doesNotReject (block, error, message) {
+  if (!(typeof block === 'function' || isPromiseLike(block))) {
+    return rejectWithInvalidArgType('block', 'Function or Promise', block);
+  }
   if (isPromiseLike(block)) {
     return doesNotWantReject(doesNotReject, block, error, message);
   }

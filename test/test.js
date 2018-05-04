@@ -487,6 +487,29 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when types other than Promise or Function', function () {
+          it('string', function () {
+            return doesNotReject('not a promise or function').then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_ARG_TYPE');
+              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type string');
+            });
+          });
+          it('number', function () {
+            return doesNotReject(9999).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_ARG_TYPE');
+              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type number');
+            });
+          });
+          it('null', function () {
+            return doesNotReject(null).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_ARG_TYPE');
+              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type object');
+            });
+          });
+        });
       });
     });
   });

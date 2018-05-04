@@ -9,7 +9,17 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
     thennable.then(function () {
       return resolve();
-    }, function (actualRejectionResult) {});
+    }, function (actualRejectionResult) {
+      var actualMessage = actualRejectionResult && actualRejectionResult.message;
+      var failureMessage = 'Got unwanted rejection.\nActual message: "' + actualMessage + '"';
+      return reject(new AssertionError({
+        actual: actualRejectionResult,
+        expected: errorHandler,
+        operator: stackStartFn.name,
+        message: failureMessage,
+        stackStartFn: stackStartFn
+      }));
+    });
   });
 }
 

@@ -49,14 +49,14 @@ subjects.forEach(function (subject) {
   describe(name, function () {
     describe('#rejects(block, [error], [message])', function () {
       describe('block argument', function () {
-        describe('when <Promise>', function () {
+        describe('when <Promise>, awaits the block promise then check that the promise is rejected.', function () {
           it('rejects with AssertionError if the block promise is not rejected.', function () {
             return rejects(willResolve('GOOD!')).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection.');
             });
           });
-          it('Awaits the block promise then check that the promise is rejected.', function () {
+          it('resolves if the block promise is rejected', function () {
             return rejects(willReject('BOMB!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);
@@ -434,8 +434,18 @@ subjects.forEach(function (subject) {
 
     describe('#doesNotReject(block, [error], [message])', function () {
       describe('block argument', function () {
-        describe('when <Promise>', function () {
-          it('Awaits the block promise then check that the promise is NOT rejected.', function () {
+        describe('when <Promise>, awaits the block promise then check that the promise is NOT rejected.', function () {
+          it('rejects with AssertionError if the block promise is rejected.', function () {
+            var te = new TypeError('Wrong type');
+            return doesNotReject(
+              willReject(te)
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === te);
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
+            });
+          });
+          it('resolves if the block promise is not rejected', function () {
             return doesNotReject(willResolve('GOOD!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);

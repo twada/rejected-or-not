@@ -25,16 +25,26 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
     thennable.then(function () {
       return resolve();
     }, function (actualRejectionResult) {
-      var actualMessage = actualRejectionResult && actualRejectionResult.message;
-      var failureMessage = 'Got unwanted rejection.\nActual message: "' + actualMessage + '"';
-      return reject(new AssertionError({
-        actual: actualRejectionResult,
-        expected: errorHandler,
-        operator: stackStartFn.name,
-        message: failureMessage,
-        stackStartFn: stackStartFn
-      }));
+      if (!errorHandler) {
+        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+      }
+      if (errorHandler instanceof RegExp && errorHandler.test(actualRejectionResult)) {
+        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+      }
+      return reject(actualRejectionResult);
     });
+  });
+}
+
+function unwantedRejectionError (stackStartFn, actual, expected) {
+  var actualMessage = actual && actual.message;
+  var failureMessage = 'Got unwanted rejection.\nActual message: "' + actualMessage + '"';
+  return new AssertionError({
+    actual: actual,
+    expected: expected,
+    operator: stackStartFn.name,
+    message: failureMessage,
+    stackStartFn: stackStartFn
   });
 }
 

@@ -511,6 +511,32 @@ subjects.forEach(function (subject) {
           });
         });
       });
+      describe('error <RegExp> | <Class> | <Function>', function () {
+        describe('when <RegExp>, validate rejected error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
+          it('when message matches, rejects with AssertionError', function () {
+            var e = new Error('Should not happen');
+            return doesNotReject(
+              willReject(e),
+              /^Error: Should not happen$/
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === e);
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Should not happen"');
+            });
+          });
+          it('when message does not match, rejects with original error', function () {
+            var e = new TypeError('Another Error');
+            return doesNotReject(
+              willReject(e),
+              /^Error: Should not happen$/
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err === e);
+              assert.equal(err.message, 'Another Error');
+            });
+          });
+        });
+      });
     });
   });
 });

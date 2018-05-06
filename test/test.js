@@ -536,6 +536,29 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when <Class>, validate instanceof using constructor', function () {
+          it('when rejected error is an instanceof <Class>, rejects with AssertionError', function () {
+            var e = new TypeError('Wrong type');
+            return doesNotReject(
+              willReject(e),
+              Error
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === e);
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
+            });
+          });
+          it('when rejected error is NOT an instanceof <Class>, rejects with the original error', function () {
+            var e = new Error('the original error message');
+            return doesNotReject(
+              willReject(e),
+              TypeError
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert.equal(err.message, 'the original error message');
+            });
+          });
+        });
       });
     });
   });

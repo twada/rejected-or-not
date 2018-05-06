@@ -31,6 +31,11 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
       if (errorHandler instanceof RegExp && errorHandler.test(actualRejectionResult)) {
         return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
       }
+      if (typeof errorHandler === 'function') {
+        if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+        }
+      }
       return reject(actualRejectionResult);
     });
   });

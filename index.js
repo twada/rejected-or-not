@@ -35,6 +35,11 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
         if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
           return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
         }
+        if (errorHandler.call({}, actualRejectionResult) === true) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+        } else {
+          return reject(actualRejectionResult);
+        }
       }
       return reject(actualRejectionResult);
     });

@@ -559,6 +559,34 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when <Function>, run custom validation against rejection result', function () {
+          it('when validation function returns `true`, rejects with AssertionError', function () {
+            var e = new Error('Wrong value');
+            return doesNotReject(
+              willReject(e),
+              function (err) {
+                return ((err instanceof Error) && /value/.test(err));
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === e);
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+            });
+          });
+          it('when returned value of validation function is NOT `true`, rejects with the original error', function () {
+            var e = new Error('the original error message');
+            return doesNotReject(
+              willReject(e),
+              function (err) {
+                return ((err instanceof TypeError) && /type/.test(err));
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof Error);
+              assert(err === e);
+              assert.equal(err.message, 'the original error message');
+            });
+          });
+        });
       });
     });
   });

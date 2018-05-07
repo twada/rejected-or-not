@@ -94,7 +94,7 @@ function rejects (block, error, message) {
 
 function wantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
-    thennable.then(function () {
+    var onFulfilled = guard(reject, function () {
       // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
       if (typeof errorHandler === 'string' && typeof message === 'undefined') {
         message = errorHandler;
@@ -112,7 +112,8 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         message: failureMessage,
         stackStartFn: stackStartFn
       }));
-    }, function (actualRejectionResult) {
+    });
+    var onRejected = guard(reject, function (actualRejectionResult) {
       if (!errorHandler) {
         return resolve();
       }
@@ -174,6 +175,7 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
       }
       return reject(actualRejectionResult);
     });
+    thennable.then(onFulfilled, onRejected);
   });
 }
 

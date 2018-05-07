@@ -213,6 +213,20 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
+          it('if Error is thrown from validation function, rejects with that error', function () {
+            var e = new Error('the original error message');
+            var te = new TypeError('some programming error');
+            return rejects(
+              willReject(e),
+              function () {
+                throw te;
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err === te);
+              assert.equal(err.message, 'some programming error');
+            });
+          });
         });
         describe('when <Object>, that is an object where each property will be tested for', function () {
           it('when all key-value pairs in errorHandler are the same as actual rejected result, resolves with undefined. Note that only properties on the error object will be tested.', function () {

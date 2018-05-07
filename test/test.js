@@ -572,6 +572,32 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
+          describe('works well with ES2015 class that extends Error', function () {
+            class ES2015Error extends Error {
+            }
+            class AnotherES2015Error extends Error {
+            }
+            it('match case, rejects with AssertionError', function () {
+              var e = new ES2015Error('foo');
+              return doesNotReject(
+                willReject(e),
+                ES2015Error
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert(err.actual === e);
+                assert.equal(err.message, 'Got unwanted rejection.\nActual message: "foo"');
+              });
+            });
+            it('unmatch case, rejects with the original error', function () {
+              return doesNotReject(
+                willReject(new AnotherES2015Error('bar')),
+                ES2015Error
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof AnotherES2015Error);
+                assert.equal(err.message, 'bar');
+              });
+            });
+          });
         });
         describe('when <Function>, run custom validation against rejection result', function () {
           it('when validation function returns `true`, rejects with AssertionError', function () {

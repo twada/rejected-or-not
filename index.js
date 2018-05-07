@@ -43,13 +43,17 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
         return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
       }
       if (typeof errorHandler === 'function') {
-        if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
-        }
-        if (errorHandler.call({}, actualRejectionResult) === true) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
-        } else {
-          return reject(actualRejectionResult);
+        if (errorHandler.prototype !== undefined) {
+          if (actualRejectionResult instanceof errorHandler) {
+            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+          } else if (Error.isPrototypeOf(errorHandler)) {
+            return reject(actualRejectionResult);
+          }
+          if (errorHandler.call({}, actualRejectionResult) === true) {
+            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+          } else {
+            return reject(actualRejectionResult);
+          }
         }
       }
       return reject(actualRejectionResult);

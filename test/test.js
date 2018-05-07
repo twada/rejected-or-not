@@ -586,6 +586,20 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
+          it('if Error is thrown from validation function, rejects with that error', function () {
+            var e = new Error('the original error message');
+            var te = new TypeError('some programming error');
+            return doesNotReject(
+              willReject(e),
+              function () {
+                throw te;
+              }
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err === te);
+              assert.equal(err.message, 'some programming error');
+            });
+          });
         });
       });
     });

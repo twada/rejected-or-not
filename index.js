@@ -20,11 +20,22 @@ function doesNotReject (block, error, message) {
   }
 }
 
+function guard (reject, block) {
+  return function (arg) {
+    try {
+      return block(arg);
+    } catch (e) {
+      return reject(e);
+    }
+  };
+}
+
 function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
-    thennable.then(function () {
+    var onFulfilled = guard(reject, function () {
       return resolve();
-    }, function (actualRejectionResult) {
+    });
+    var onRejected = guard(reject, function (actualRejectionResult) {
       if (!errorHandler) {
         return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
       }
@@ -43,6 +54,7 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
       }
       return reject(actualRejectionResult);
     });
+    thennable.then(onFulfilled, onRejected);
   });
 }
 

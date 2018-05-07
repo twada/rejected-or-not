@@ -116,14 +116,16 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         }
       }
       if (typeof errorHandler === 'function') {
-        if (errorHandler.prototype !== undefined && actualRejectionResult instanceof errorHandler) {
-          return resolve();
-        }
-        // Dealing with ES2015 class that extends Error
-        // see: https://github.com/nodejs/node/issues/3188
-        // see: https://github.com/nodejs/node/pull/4166
-        if (Error.isPrototypeOf(errorHandler)) {
-          return reject(actualRejectionResult);
+        // Guard instanceof against arrow functions as they don't have a prototype.
+        if (errorHandler.prototype !== undefined) {
+          if (actualRejectionResult instanceof errorHandler) {
+            return resolve();
+          } else if (Error.isPrototypeOf(errorHandler)) {
+            // Dealing with ES2015 class that extends Error
+            // see: https://github.com/nodejs/node/issues/3188
+            // see: https://github.com/nodejs/node/pull/4166
+            return reject(actualRejectionResult);
+          }
         }
         if (errorHandler.call({}, actualRejectionResult) === true) {
           return resolve();

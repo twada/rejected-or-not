@@ -37,20 +37,20 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
     });
     var onRejected = guard(reject, function (actualRejectionResult) {
       if (!errorHandler) {
-        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
       }
       if (errorHandler instanceof RegExp && errorHandler.test(actualRejectionResult)) {
-        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
       }
       if (typeof errorHandler === 'function') {
         if (errorHandler.prototype !== undefined) {
           if (actualRejectionResult instanceof errorHandler) {
-            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
           } else if (Error.isPrototypeOf(errorHandler)) {
             return reject(actualRejectionResult);
           }
           if (errorHandler.call({}, actualRejectionResult) === true) {
-            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler));
+            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
           } else {
             return reject(actualRejectionResult);
           }
@@ -62,9 +62,11 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   });
 }
 
-function unwantedRejectionError (stackStartFn, actual, expected) {
+function unwantedRejectionError (stackStartFn, actual, expected, message) {
   var actualMessage = actual && actual.message;
-  var failureMessage = 'Got unwanted rejection.\nActual message: "' + actualMessage + '"';
+  var failureMessage = 'Got unwanted rejection';
+  failureMessage += message ? ': ' + message : '.';
+  failureMessage += '\nActual message: "' + actualMessage + '"';
   return new AssertionError({
     actual: actual,
     expected: expected,

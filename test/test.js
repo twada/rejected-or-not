@@ -642,6 +642,20 @@ subjects.forEach(function (subject) {
           });
         });
       });
+      describe('message <any>', function () {
+        it('If an AssertionError is thrown and a value is provided for the message parameter, the value of message will be appended to the AssertionError message', function () {
+          var e = new TypeError('Wrong type');
+          return doesNotReject(
+            willReject(e),
+            TypeError,
+            'should not be thrown'
+          ).then(shouldNotBeFulfilled, function (err) {
+            assert(err instanceof assert.AssertionError);
+            assert(err.actual === e);
+            assert.equal(err.message, 'Got unwanted rejection: should not be thrown\nActual message: "Wrong type"');
+          });
+        });
+      });
     });
   });
 });

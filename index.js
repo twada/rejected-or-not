@@ -53,11 +53,11 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
           } else if (Error.isPrototypeOf(errorHandler)) {
             return reject(actualRejectionResult);
           }
-          if (errorHandler.call({}, actualRejectionResult) === true) {
-            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
-          } else {
-            return reject(actualRejectionResult);
-          }
+        }
+        if (errorHandler.call({}, actualRejectionResult) === true) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+        } else {
+          return reject(actualRejectionResult);
         }
       }
       return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));

@@ -641,6 +641,17 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        it('validation function can be an arrow function', function () {
+          var e = new Error('Wrong value');
+          return doesNotReject(
+            willReject(e),
+            (err) => ((err instanceof Error) && /value/.test(err))
+          ).then(shouldNotBeFulfilled, function (err) {
+            assert(err instanceof assert.AssertionError);
+            assert(err.actual === e);
+            assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+          });
+        });
         describe('when types other than RegExp or Function (including Class)', function () {
           it('number', function () {
             return doesNotReject(

@@ -1,3 +1,5 @@
+'use strict';
+
 delete require.cache[require.resolve('..')];
 var rejectedOrNot = require('..');
 var assert = require('assert');

@@ -1,3 +1,5 @@
+'use strict';
+
 var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
 var slice = Array.prototype.slice;

@@ -1,5 +1,16 @@
 var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
+var slice = Array.prototype.slice;
+
+function ensureSettled (reject, block) {
+  return function () {
+    try {
+      return block.apply(null, slice.call(arguments));
+    } catch (e) {
+      return reject(e);
+    }
+  };
+}
 
 function doesNotReject (block, error, message) {
   if (!(typeof block === 'function' || isPromiseLike(block))) {
@@ -8,24 +19,20 @@ function doesNotReject (block, error, message) {
   if (isPromiseLike(block)) {
     return doesNotWantReject(doesNotReject, block, error, message);
   }
-  try {
-    var ret = block();
-    if (isPromiseLike(ret)) {
-      return doesNotWantReject(doesNotReject, ret, error, message);
-    } else {
-      return rejectWithInvalidReturnValue('block', ret);
-    }
-  } catch (e) {
-    return Promise.reject(e);
+  var ret = block();
+  if (isPromiseLike(ret)) {
+    return doesNotWantReject(doesNotReject, ret, error, message);
+  } else {
+    return rejectWithInvalidReturnValue('block', ret);
   }
 }
 
 function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
-    var onFulfilled = guard(reject, function () {
+    var onFulfilled = ensureSettled(reject, function () {
       return resolve();
     });
-    var onRejected = guard(reject, function (actualRejectionResult) {
+    var onRejected = ensureSettled(reject, function (actualRejectionResult) {
       if (!errorHandler) {
         return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
       }
@@ -80,21 +87,17 @@ function rejects (block, error, message) {
   if (isPromiseLike(block)) {
     return wantReject(rejects, block, error, message);
   }
-  try {
-    var ret = block();
-    if (isPromiseLike(ret)) {
-      return wantReject(rejects, ret, error, message);
-    } else {
-      return rejectWithInvalidReturnValue('block', ret);
-    }
-  } catch (e) {
-    return Promise.reject(e);
+  var ret = block();
+  if (isPromiseLike(ret)) {
+    return wantReject(rejects, ret, error, message);
+  } else {
+    return rejectWithInvalidReturnValue('block', ret);
   }
 }
 
 function wantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
-    var onFulfilled = guard(reject, function () {
+    var onFulfilled = ensureSettled(reject, function () {
       // If a string is provided as the second argument, then error is assumed to be omitted and the string will be used for message instead.
       if (typeof errorHandler === 'string' && typeof message === 'undefined') {
         message = errorHandler;
@@ -113,7 +116,7 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         stackStartFn: stackStartFn
       }));
     });
-    var onRejected = guard(reject, function (actualRejectionResult) {
+    var onRejected = ensureSettled(reject, function (actualRejectionResult) {
       if (!errorHandler) {
         return resolve();
       }
@@ -134,7 +137,7 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         }
       }
       if (typeof errorHandler === 'function') {
-        // Guard instanceof against arrow functions as they don't have a prototype.
+        // ensureSettled instanceof against arrow functions as they don't have a prototype.
         if (errorHandler.prototype !== undefined) {
           if (actualRejectionResult instanceof errorHandler) {
             return resolve();
@@ -177,16 +180,6 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
     });
     thennable.then(onFulfilled, onRejected);
   });
-}
-
-function guard (reject, block) {
-  return function (arg) {
-    try {
-      return block(arg);
-    } catch (e) {
-      return reject(e);
-    }
-  };
 }
 
 function isPromiseLike (obj) {
@@ -250,6 +243,6 @@ function createComparisonMessage (actual, expected, keys, stackStartFn) {
 }
 
 module.exports = {
-  rejects: rejects,
-  doesNotReject: doesNotReject
+  rejects: ensureSettled(function (e) { return Promise.reject(e); }, rejects),
+  doesNotReject: ensureSettled(function (e) { return Promise.reject(e); }, doesNotReject)
 };

@@ -39,8 +39,12 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
       if (!errorHandler) {
         return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
       }
-      if (errorHandler instanceof RegExp && errorHandler.test(actualRejectionResult)) {
-        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+      if (errorHandler instanceof RegExp) {
+        if (errorHandler.test(actualRejectionResult)) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+        } else {
+          return reject(actualRejectionResult);
+        }
       }
       if (typeof errorHandler === 'function') {
         if (errorHandler.prototype !== undefined) {
@@ -56,7 +60,7 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
           }
         }
       }
-      return reject(actualRejectionResult);
+      return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
     });
     thennable.then(onFulfilled, onRejected);
   });
@@ -198,10 +202,14 @@ function createAmbiguousArgumentError (msg) {
   return te;
 }
 
-function rejectWithInvalidArgType (argName, typeNames, actualArg) {
+function createInvalidArgTypeError (argName, typeNames, actualArg) {
   var te = new TypeError('The "' + argName + '" argument must be one of type ' + typeNames + '. Received type ' + typeof actualArg);
   te.code = 'ERR_INVALID_ARG_TYPE';
-  return Promise.reject(te);
+  return te;
+}
+
+function rejectWithInvalidArgType (argName, typeNames, actualArg) {
+  return Promise.reject(createInvalidArgTypeError(argName, typeNames, actualArg));
 }
 
 function rejectWithInvalidReturnValue (fnName, ret) {

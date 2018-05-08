@@ -641,6 +641,18 @@ subjects.forEach(function (subject) {
             });
           });
         });
+        describe('when types other than RegExp or Function (including Class)', function () {
+          it('number', function () {
+            return doesNotReject(
+              willReject(new Error('Wrong value')),
+              9999
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof TypeError);
+              assert(err.code === 'ERR_INVALID_ARG_TYPE');
+              assert.equal(err.message, 'The "expected" argument must be one of type Function or RegExp. Received type number');
+            });
+          });
+        });
       });
       describe('message <any>', function () {
         it('If an AssertionError is thrown and a value is provided for the message parameter, the value of message will be appended to the AssertionError message', function () {

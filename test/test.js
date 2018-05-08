@@ -640,16 +640,43 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'some programming error');
             });
           });
+          it('validation function can be an arrow function', function () {
+            var e = new Error('Wrong value');
+            return doesNotReject(
+              willReject(e),
+              (err) => ((err instanceof Error) && /value/.test(err))
+            ).then(shouldNotBeFulfilled, function (err) {
+              assert(err instanceof assert.AssertionError);
+              assert(err.actual === e);
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+            });
+          });
         });
-        it('validation function can be an arrow function', function () {
-          var e = new Error('Wrong value');
-          return doesNotReject(
-            willReject(e),
-            (err) => ((err instanceof Error) && /value/.test(err))
-          ).then(shouldNotBeFulfilled, function (err) {
-            assert(err instanceof assert.AssertionError);
-            assert(err.actual === e);
-            assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+        describe('Note that `error` cannot be a string.', function () {
+          describe('If a string is provided as the second argument,', function () {
+            it('then `error` is assumed to be omitted and the string will be used for `message` instead. This can lead to easy-to-miss mistakes.', function () {
+              var e = new TypeError('Wrong type');
+              return doesNotReject(
+                willReject(e),
+                'This can lead to easy-to-miss mistakes.'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert(err.actual === e);
+                assert.equal(err.message, 'Got unwanted rejection: This can lead to easy-to-miss mistakes.\nActual message: "Wrong type"');
+              });
+            });
+            it('and the third argument is also given, third argument is just ignored', function () {
+              var e = new TypeError('Wrong type');
+              return doesNotReject(
+                willReject(e),
+                'This can lead to easy-to-miss mistakes.',
+                'This is clearly a mistake.'
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert(err.actual === e);
+                assert.equal(err.message, 'Got unwanted rejection: This can lead to easy-to-miss mistakes.\nActual message: "Wrong type"');
+              });
+            });
           });
         });
         describe('when types other than RegExp or Function (including Class)', function () {

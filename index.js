@@ -16,6 +16,10 @@ function doesNotReject (block, error, message) {
   if (!(typeof block === 'function' || isPromiseLike(block))) {
     return rejectWithInvalidArgType('block', 'Function or Promise', block);
   }
+  if (typeof error === 'string') {
+    message = error;
+    error = undefined;
+  }
   if (isPromiseLike(block)) {
     return doesNotWantReject(doesNotReject, block, error, message);
   }

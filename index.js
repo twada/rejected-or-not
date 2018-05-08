@@ -20,16 +20,6 @@ function doesNotReject (block, error, message) {
   }
 }
 
-function guard (reject, block) {
-  return function (arg) {
-    try {
-      return block(arg);
-    } catch (e) {
-      return reject(e);
-    }
-  };
-}
-
 function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   return new Promise(function (resolve, reject) {
     var onFulfilled = guard(reject, function () {
@@ -45,8 +35,7 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
         } else {
           return reject(actualRejectionResult);
         }
-      }
-      if (typeof errorHandler === 'function') {
+      } else if (typeof errorHandler === 'function') {
         if (errorHandler.prototype !== undefined) {
           if (actualRejectionResult instanceof errorHandler) {
             return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
@@ -59,8 +48,9 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
         } else {
           return reject(actualRejectionResult);
         }
+      } else {
+        return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
       }
-      return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
     });
     thennable.then(onFulfilled, onRejected);
   });
@@ -187,6 +177,16 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
     });
     thennable.then(onFulfilled, onRejected);
   });
+}
+
+function guard (reject, block) {
+  return function (arg) {
+    try {
+      return block(arg);
+    } catch (e) {
+      return reject(e);
+    }
+  };
 }
 
 function isPromiseLike (obj) {

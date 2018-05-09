@@ -10,6 +10,14 @@ Promise-based implementation of Node v10's [`assert.rejects()`](https://nodejs.o
 *Issues and improvements should be done in [Node.js](https://github.com/nodejs/node/issues) first.*
 
 
+INSTALL
+---------------------------------------
+
+```
+npm install rejected-or-not
+```
+
+
 API
 ---------------------------------------
 
@@ -47,14 +55,6 @@ const promiseToBeRejected = new Promise((resolve, reject) => {
     // resolves when rejected
   });
 })();
-```
-
-
-INSTALL
----------------------------------------
-
-```
-npm install rejected-or-not
 ```
 
 

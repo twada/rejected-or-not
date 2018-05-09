@@ -3,6 +3,10 @@ rejected-or-not
 
 Promise-based implementation of Node v10's [`assert.rejects()`](https://nodejs.org/api/assert.html#assert_assert_rejects_block_error_message) and [`assert.doesNotReject()`](https://nodejs.org/api/assert.html#assert_assert_doesnotreject_block_error_message) for old Nodes and browsers.
 
+[![Build Status][travis-image]][travis-url]
+[![NPM version][npm-image]][npm-url]
+[![License][license-image]][license-url]
+
 *Issues and improvements should be done in [Node.js](https://github.com/nodejs/node/issues) first.*
 
 
@@ -61,4 +65,13 @@ AUTHOR
 
 LICENSE
 ---------------------------------------
-Licensed under the [MIT](http://twada.mit-license.org/) license.
+Licensed under the [MIT](https://github.com/twada/rejected-or-not/blob/master/LICENSE) license.
+
+[travis-url]: https://travis-ci.org/twada/rejected-or-not
+[travis-image]: https://secure.travis-ci.org/twada/rejected-or-not.svg?branch=master
+
+[npm-url]: https://npmjs.org/package/rejected-or-not
+[npm-image]: https://badge.fury.io/js/rejected-or-not.svg
+
+[license-url]: https://github.com/twada/rejected-or-not/blob/master/LICENSE
+[license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg

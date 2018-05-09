@@ -135,24 +135,24 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
     });
     var onRejected = ensureSettled(reject, function (actualRejectionResult) {
       if (!errorHandler) {
-        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+        return reject(createUnwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
       }
       if (errorHandler instanceof RegExp) {
         if (errorHandler.test(actualRejectionResult)) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+          return reject(createUnwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
         } else {
           return reject(actualRejectionResult);
         }
       } else if (typeof errorHandler === 'function') {
         if (errorHandler.prototype !== undefined) {
           if (actualRejectionResult instanceof errorHandler) {
-            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+            return reject(createUnwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
           } else if (Error.isPrototypeOf(errorHandler)) {
             return reject(actualRejectionResult);
           }
         }
         if (errorHandler.call({}, actualRejectionResult) === true) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+          return reject(createUnwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
         } else {
           return reject(actualRejectionResult);
         }
@@ -164,7 +164,7 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
   });
 }
 
-function unwantedRejectionError (stackStartFn, actual, expected, message) {
+function createUnwantedRejectionError (stackStartFn, actual, expected, message) {
   var actualMessage = actual && actual.message;
   var failureMessage = 'Got unwanted rejection';
   failureMessage += message ? ': ' + message : '.';
@@ -176,13 +176,6 @@ function unwantedRejectionError (stackStartFn, actual, expected, message) {
     message: failureMessage,
     stackStartFn: stackStartFn
   });
-}
-
-function isPromiseLike (obj) {
-  return obj !== null &&
-    typeof obj === 'object' &&
-    typeof obj.then === 'function' &&
-    typeof obj.catch === 'function';
 }
 
 function createAmbiguousArgumentError (msg) {
@@ -197,20 +190,24 @@ function createInvalidArgTypeError (argName, typeNames, actualArg) {
   return te;
 }
 
-function rejectWithInvalidArgType (argName, typeNames, actualArg) {
-  return Promise.reject(createInvalidArgTypeError(argName, typeNames, actualArg));
-}
-
-function rejectWithInvalidReturnValue (fnName, ret) {
+function createInvalidReturnValueError (fnName, ret) {
   var wrongType;
   if (ret && ret.constructor && ret.constructor.name) {
     wrongType = 'instance of ' + ret.constructor.name;
   } else {
     wrongType = 'type ' + typeof ret;
   }
-  var e = new TypeError('Expected instance of Promise to be returned from the "' + fnName + '" function but got ' + wrongType + '.');
-  e.code = 'ERR_INVALID_RETURN_VALUE';
-  return Promise.reject(e);
+  var te = new TypeError('Expected instance of Promise to be returned from the "' + fnName + '" function but got ' + wrongType + '.');
+  te.code = 'ERR_INVALID_RETURN_VALUE';
+  return te;
+}
+
+function rejectWithInvalidArgType (argName, typeNames, actualArg) {
+  return Promise.reject(createInvalidArgTypeError(argName, typeNames, actualArg));
+}
+
+function rejectWithInvalidReturnValue (fnName, ret) {
+  return Promise.reject(createInvalidReturnValueError(fnName, ret));
 }
 
 function comparison (obj, keys) {
@@ -236,6 +233,13 @@ function createComparisonMessage (actual, expected, keys, stackStartFn) {
   });
   Error.stackTraceLimit = tmpLimit;
   return err.message;
+}
+
+function isPromiseLike (obj) {
+  return obj !== null &&
+    typeof obj === 'object' &&
+    typeof obj.then === 'function' &&
+    typeof obj.catch === 'function';
 }
 
 function ensureSettled (reject, block) {

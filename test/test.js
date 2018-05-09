@@ -4,15 +4,15 @@ delete require.cache[require.resolve('..')];
 var rejectedOrNot = require('..');
 var assert = require('assert');
 
-var subjects = [
+var implementations = [
   {
-    name: 'npm module',
+    name: 'rejected-or-not',
     rejects: rejectedOrNot.rejects,
     doesNotReject: rejectedOrNot.doesNotReject
   }
 ];
 if (typeof assert.rejects === 'function') {
-  subjects.push({
+  implementations.push({
     name: 'official implementation',
     rejects: assert.rejects,
     doesNotReject: assert.doesNotReject
@@ -43,15 +43,15 @@ function shouldNotBeRejected (args) {
   assert(false, 'should not be rejected: ' + args);
 }
 
-subjects.forEach(function (subject) {
-  var name = subject.name;
-  var rejects = subject.rejects;
-  var doesNotReject = subject.doesNotReject;
+implementations.forEach(function (impl) {
+  var name = impl.name;
+  var rejects = impl.rejects;
+  var doesNotReject = impl.doesNotReject;
 
   describe(name, function () {
     describe('#rejects(block, [error], [message])', function () {
-      describe('block argument', function () {
-        describe('when <Promise>, awaits the block promise then check that the promise is rejected.', function () {
+      describe('block <Function> | <Promise>', function () {
+        describe('if `block` is a <Promise>, awaits the block promise then check that the promise is rejected.', function () {
           it('rejects with AssertionError if the block promise is not rejected.', function () {
             return rejects(willResolve('GOOD!')).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
@@ -64,8 +64,8 @@ subjects.forEach(function (subject) {
             }, shouldNotBeRejected);
           });
         });
-        describe('when <Function>', function () {
-          it('rejects with AssertionError if result of block function is not rejected.', function () {
+        describe('if `block` is a <Function>, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
+          it('rejects with AssertionError if result of block function is NOT rejected.', function () {
             return rejects(function () {
               return willResolve('GOOD!');
             }).then(shouldNotBeFulfilled, function (err) {
@@ -73,14 +73,14 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'Missing expected rejection.');
             });
           });
-          it('if block is a function, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
+          it('resolves if result of block function is rejected', function () {
             return rejects(function () {
               return willReject('BOMB!');
             }).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
-          it('If block is a function and it throws an error synchronously, assert.rejects() will return a rejected Promise with that error.', function () {
+          it('if block is a function and it throws an error synchronously, `rejects()` will return a rejected Promise with that error.', function () {
             return rejects(function () {
               throw new Error('synchronous error');
             }).then(shouldNotBeFulfilled, function (err) {
@@ -88,7 +88,7 @@ subjects.forEach(function (subject) {
               assert(err.message === 'synchronous error');
             });
           });
-          it('If the function does not return a promise, assert.rejects() will return a rejected Promise with an ERR_INVALID_RETURN_VALUE error.', function () {
+          it('if the function does not return a promise, `rejects()` will return a rejected Promise with an `ERR_INVALID_RETURN_VALUE` TypeError.', function () {
             return rejects(function () {
               return 'not a Promise';
             }).then(shouldNotBeFulfilled, function (err) {
@@ -98,7 +98,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when types other than Promise or Function', function () {
+        describe('if type of `block` is other than Promise or Function, `rejects()` will return a rejected Promise with an `ERR_INVALID_ARG_TYPE` TypeError.', function () {
           it('string', function () {
             return rejects('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
@@ -122,8 +122,8 @@ subjects.forEach(function (subject) {
           });
         });
       });
-      describe('[error] argument', function () {
-        describe('when <RegExp>, validate error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
+      describe('error <RegExp> | <Class> | <Function> | <Object> | <Error>', function () {
+        describe('if `error` is a <RegExp>, validate error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
           it('when message matches, resolves with undefined', function () {
             return rejects(
               willReject(new Error('Wrong value')),
@@ -142,7 +142,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Class>, validate instanceof using constructor', function () {
+        describe('if `error` is a <Class>, validate instanceof using constructor', function () {
           it('when rejected error is an instanceof <Class>, resolves with undefined', function () {
             return rejects(
               willReject(new TypeError('Wrong type')),
@@ -160,12 +160,12 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'the original error message');
             });
           });
-          describe('works well with ES2015 class that extends Error', function () {
+          describe('works well with ES2015 classes that extends Error', function () {
             class ES2015Error extends Error {
             }
             class AnotherES2015Error extends Error {
             }
-            it('match case', function () {
+            it('match case, resolves with undefined', function () {
               return rejects(
                 willReject(new ES2015Error('foo')),
                 ES2015Error
@@ -173,7 +173,7 @@ subjects.forEach(function (subject) {
                 assert(nothing === undefined);
               }, shouldNotBeRejected);
             });
-            it('unmatch case', function () {
+            it('unmatch case, rejects with the original error', function () {
               return rejects(
                 willReject(new AnotherES2015Error('bar')),
                 ES2015Error
@@ -193,7 +193,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Function>, run custom validation against rejection result', function () {
+        describe('if `error` is a <Function>, run custom validation against rejection result', function () {
           it('when validation function returns `true`, resolves with undefined', function () {
             return rejects(
               willReject(new Error('Wrong value')),
@@ -230,8 +230,8 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Object>, that is an object where each property will be tested for', function () {
-          it('when all key-value pairs in errorHandler are the same as actual rejected result, resolves with undefined. Note that only properties on the error object will be tested.', function () {
+        describe('if `error` is an <Object>, that is an object where each property will be tested for', function () {
+          it('when all key-value pairs in `error` are the same as actual rejected result, resolves with undefined. Note that only properties on the error object will be tested.', function () {
             var te = new TypeError('Wrong type');
             te.code = 'ERR_INVALID_ARG_TYPE';
             return rejects(
@@ -259,7 +259,7 @@ subjects.forEach(function (subject) {
               assert(err.actual === te);
             });
           });
-          it('when rejected result does not have property that errorHandler have, rejects with AssertionError', function () {
+          it('when rejected result does not have property that `error` have, rejects with AssertionError', function () {
             var te = new TypeError('Wrong type');
             return rejects(
               willReject(te),
@@ -285,8 +285,8 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Error>, that is an instance of error where each property will be tested for including the non-enumerable message and name properties.', function () {
-          it('when all key-value pairs in errorHandler (error instance in this case) are the same as actual rejected error, resolves with undefined. Note that only properties on the errorHandler object will be tested.', function () {
+        describe('if `error` is an <Error>, that is an instance of error where each property will be tested for including the non-enumerable message and name properties.', function () {
+          it('when all key-value pairs in `error` (error instance in this case) are the same as actual rejected error, resolves with undefined. Note that only properties on the `error` will be tested.', function () {
             var te = new TypeError('Wrong type');
             te.code = 'ERR_INVALID_ARG_TYPE';
             return rejects(
@@ -318,7 +318,7 @@ subjects.forEach(function (subject) {
           });
         });
         describe('Note that `error` cannot be a string.', function () {
-          describe('If a string is provided as the second argument,', function () {
+          describe('if a string is provided as the second argument,', function () {
             it('then `error` is assumed to be omitted and the string will be used for `message` instead. This can lead to easy-to-miss mistakes.', function () {
               return rejects(
                 willResolve('GOOD!'),
@@ -328,7 +328,7 @@ subjects.forEach(function (subject) {
                 assert.equal(err.message, 'Missing expected rejection: This can lead to easy-to-miss mistakes.');
               });
             });
-            it('and the third argument is also given, throw TypeError with code ERR_INVALID_ARG_TYPE', function () {
+            it('and the third argument is also given, throw TypeError with code `ERR_INVALID_ARG_TYPE`', function () {
               return rejects(
                 willResolve('GOOD!'),
                 'This can lead to easy-to-miss mistakes.',
@@ -338,7 +338,7 @@ subjects.forEach(function (subject) {
                 assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
               });
             });
-            it('and is identical to the message property of actual rejected error, throw TypeError with code ERR_AMBIGUOUS_ARGUMENT', function () {
+            it('and is identical to the message property of actual rejected error, throw TypeError with code `ERR_AMBIGUOUS_ARGUMENT`', function () {
               return rejects(
                 willReject(new TypeError('Wrong type')),
                 'Wrong type'
@@ -348,7 +348,7 @@ subjects.forEach(function (subject) {
                 assert.equal(err.message, 'The "error/message" argument is ambiguous. The error message "Wrong type" is identical to the message.');
               });
             });
-            it('and is identical to the actual rejected object, throw TypeError with code ERR_AMBIGUOUS_ARGUMENT', function () {
+            it('and is identical to the actual rejected object, throw TypeError with code `ERR_AMBIGUOUS_ARGUMENT`', function () {
               return rejects(
                 willReject('Rejection Reason'),
                 'Rejection Reason'
@@ -361,9 +361,9 @@ subjects.forEach(function (subject) {
           });
         });
       });
-      describe('[message] argument', function () {
-        describe('If specified, message will be the message provided by the AssertionError if the block fails to reject.', function () {
-          it('with expected error class name (when `error` is one of <Class>, <Error> or <Object> with name property)', function () {
+      describe('message <any>', function () {
+        describe('if specified, `message` will be the message provided by the AssertionError if the block fails to reject.', function () {
+          it('assertion message with expected error class name (when `error` is one of <Class>, <Error> or <Object> with name property)', function () {
             return rejects(
               willResolve('GOOD!'),
               TypeError,
@@ -373,7 +373,7 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'Missing expected rejection (TypeError): MUST BE REJECTED but resolved');
             });
           });
-          it('without expected error class name (when `error` is RegExp or Fuction)', function () {
+          it('assertion message without expected error class name (when `error` is RegExp or Fuction)', function () {
             return rejects(
               willResolve('GOOD!'),
               /Wrong value/,
@@ -413,36 +413,36 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('exceptional cases', function () {
-          it('when `error` is null', function () {
-            return rejects(
-              willResolve('GOOD!'),
-              null,
-              'MUST BE REJECTED but resolved'
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof assert.AssertionError);
-              assert.equal(err.message, 'Missing expected rejection: MUST BE REJECTED but resolved');
-            });
+        it('`message` argument accepts <any>', function () {
+          return rejects(
+            willResolve('GOOD!'),
+            null,
+            1234
+          ).then(shouldNotBeFulfilled, function (err) {
+            assert(err instanceof assert.AssertionError);
+            assert.equal(err.message, 'Missing expected rejection: 1234');
           });
-          it('when `error` is null and `message` is also null', function () {
-            return rejects(
-              willResolve('GOOD!'),
-              null,
-              null
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof assert.AssertionError);
-              assert.equal(err.message, 'Missing expected rejection.');
-            });
+        });
+      });
+      describe('edge cases', function () {
+        it('when `error` is null, works as if `block` and `message` are given', function () {
+          return rejects(
+            willResolve('GOOD!'),
+            null,
+            'MUST BE REJECTED but resolved'
+          ).then(shouldNotBeFulfilled, function (err) {
+            assert(err instanceof assert.AssertionError);
+            assert.equal(err.message, 'Missing expected rejection: MUST BE REJECTED but resolved');
           });
-          it('`message` argument accepts <any>', function () {
-            return rejects(
-              willResolve('GOOD!'),
-              null,
-              1234
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof assert.AssertionError);
-              assert.equal(err.message, 'Missing expected rejection: 1234');
-            });
+        });
+        it('when `error` is null and `message` is also null, works as if only `block` is given', function () {
+          return rejects(
+            willResolve('GOOD!'),
+            null,
+            null
+          ).then(shouldNotBeFulfilled, function (err) {
+            assert(err instanceof assert.AssertionError);
+            assert.equal(err.message, 'Missing expected rejection.');
           });
         });
       });
@@ -450,8 +450,8 @@ subjects.forEach(function (subject) {
 
     describe('#doesNotReject(block, [error], [message])', function () {
       describe('block <Function> | <Promise>', function () {
-        describe('when <Promise>, awaits the block promise then check that the promise is NOT rejected.', function () {
-          it('rejects with AssertionError if the block promise is rejected.', function () {
+        describe('if `block` is a <Promise>, awaits the promise then check that the promise is NOT rejected.', function () {
+          it('rejects with AssertionError if the `block` is rejected.', function () {
             var te = new TypeError('Wrong type');
             return doesNotReject(
               willReject(te)
@@ -461,14 +461,14 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
             });
           });
-          it('resolves if the block promise is not rejected', function () {
+          it('resolves if the `block` is not rejected', function () {
             return doesNotReject(willResolve('GOOD!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
         });
-        describe('when <Function>, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is NOT rejected.', function () {
-          it('rejects with AssertionError if the block promise is rejected.', function () {
+        describe('if `block` is a <Function>, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is NOT rejected.', function () {
+          it('rejects with AssertionError if the promise returned from `block` is rejected.', function () {
             var te = new TypeError('Wrong type');
             return doesNotReject(function () {
               return willReject(te);
@@ -478,7 +478,7 @@ subjects.forEach(function (subject) {
               assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
             });
           });
-          it('resolves if the block promise is not rejected', function () {
+          it('resolves if the promise returned from `block` is not rejected', function () {
             return doesNotReject(function () {
               return willResolve('GOOD!');
             }).then(function () {
@@ -503,7 +503,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when types other than Promise or Function', function () {
+        describe('if type of `block` is other than Promise or Function, `doesNotReject()` will return a rejected Promise with an `ERR_INVALID_ARG_TYPE` TypeError.', function () {
           it('string', function () {
             return doesNotReject('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
@@ -528,7 +528,7 @@ subjects.forEach(function (subject) {
         });
       });
       describe('error <RegExp> | <Class> | <Function>', function () {
-        describe('when <RegExp>, validate rejected error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
+        describe('if `error` is a <RegExp>, validate rejected error message using RegExp. Using a regular expression runs .toString on the error object, and will therefore also include the error name.', function () {
           it('when message matches, rejects with AssertionError', function () {
             var e = new Error('Should not happen');
             return doesNotReject(
@@ -552,7 +552,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Class>, validate instanceof using constructor', function () {
+        describe('if `error` is a <Class>, validate instanceof using constructor', function () {
           it('when rejected error is an instanceof <Class>, rejects with AssertionError', function () {
             var e = new TypeError('Wrong type');
             return doesNotReject(
@@ -601,7 +601,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when <Function>, run custom validation against rejection result', function () {
+        describe('if `error` is a <Function>, run custom validation against rejection result', function () {
           it('when validation function returns `true`, rejects with AssertionError', function () {
             var e = new Error('Wrong value');
             return doesNotReject(
@@ -681,7 +681,7 @@ subjects.forEach(function (subject) {
             });
           });
         });
-        describe('when types other than RegExp or Function (including Class)', function () {
+        describe('if type of `error` is other than RegExp or Function (including Class)', function () {
           it('number', function () {
             return doesNotReject(
               willReject(new Error('Wrong value')),

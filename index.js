@@ -4,14 +4,22 @@ var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
 var slice = Array.prototype.slice;
 
-function ensureSettled (reject, block) {
-  return function () {
-    try {
-      return block.apply(null, slice.call(arguments));
-    } catch (e) {
-      return reject(e);
-    }
-  };
+function rejects (block, error, message) {
+  if (!(typeof block === 'function' || isPromiseLike(block))) {
+    return rejectWithInvalidArgType('block', 'Function or Promise', block);
+  }
+  if (typeof error === 'string' && arguments.length === 3) {
+    return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
+  }
+  if (isPromiseLike(block)) {
+    return wantReject(rejects, block, error, message);
+  }
+  var ret = block();
+  if (isPromiseLike(ret)) {
+    return wantReject(rejects, ret, error, message);
+  } else {
+    return rejectWithInvalidReturnValue('block', ret);
+  }
 }
 
 function doesNotReject (block, error, message) {
@@ -28,74 +36,6 @@ function doesNotReject (block, error, message) {
   var ret = block();
   if (isPromiseLike(ret)) {
     return doesNotWantReject(doesNotReject, ret, error, message);
-  } else {
-    return rejectWithInvalidReturnValue('block', ret);
-  }
-}
-
-function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
-  return new Promise(function (resolve, reject) {
-    var onFulfilled = ensureSettled(reject, function () {
-      return resolve();
-    });
-    var onRejected = ensureSettled(reject, function (actualRejectionResult) {
-      if (!errorHandler) {
-        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
-      }
-      if (errorHandler instanceof RegExp) {
-        if (errorHandler.test(actualRejectionResult)) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
-        } else {
-          return reject(actualRejectionResult);
-        }
-      } else if (typeof errorHandler === 'function') {
-        if (errorHandler.prototype !== undefined) {
-          if (actualRejectionResult instanceof errorHandler) {
-            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
-          } else if (Error.isPrototypeOf(errorHandler)) {
-            return reject(actualRejectionResult);
-          }
-        }
-        if (errorHandler.call({}, actualRejectionResult) === true) {
-          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
-        } else {
-          return reject(actualRejectionResult);
-        }
-      } else {
-        return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
-      }
-    });
-    thennable.then(onFulfilled, onRejected);
-  });
-}
-
-function unwantedRejectionError (stackStartFn, actual, expected, message) {
-  var actualMessage = actual && actual.message;
-  var failureMessage = 'Got unwanted rejection';
-  failureMessage += message ? ': ' + message : '.';
-  failureMessage += '\nActual message: "' + actualMessage + '"';
-  return new AssertionError({
-    actual: actual,
-    expected: expected,
-    operator: stackStartFn.name,
-    message: failureMessage,
-    stackStartFn: stackStartFn
-  });
-}
-
-function rejects (block, error, message) {
-  if (!(typeof block === 'function' || isPromiseLike(block))) {
-    return rejectWithInvalidArgType('block', 'Function or Promise', block);
-  }
-  if (typeof error === 'string' && arguments.length === 3) {
-    return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
-  }
-  if (isPromiseLike(block)) {
-    return wantReject(rejects, block, error, message);
-  }
-  var ret = block();
-  if (isPromiseLike(ret)) {
-    return wantReject(rejects, ret, error, message);
   } else {
     return rejectWithInvalidReturnValue('block', ret);
   }
@@ -188,6 +128,56 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
   });
 }
 
+function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
+  return new Promise(function (resolve, reject) {
+    var onFulfilled = ensureSettled(reject, function () {
+      return resolve();
+    });
+    var onRejected = ensureSettled(reject, function (actualRejectionResult) {
+      if (!errorHandler) {
+        return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+      }
+      if (errorHandler instanceof RegExp) {
+        if (errorHandler.test(actualRejectionResult)) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+        } else {
+          return reject(actualRejectionResult);
+        }
+      } else if (typeof errorHandler === 'function') {
+        if (errorHandler.prototype !== undefined) {
+          if (actualRejectionResult instanceof errorHandler) {
+            return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+          } else if (Error.isPrototypeOf(errorHandler)) {
+            return reject(actualRejectionResult);
+          }
+        }
+        if (errorHandler.call({}, actualRejectionResult) === true) {
+          return reject(unwantedRejectionError(stackStartFn, actualRejectionResult, errorHandler, message));
+        } else {
+          return reject(actualRejectionResult);
+        }
+      } else {
+        return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
+      }
+    });
+    thennable.then(onFulfilled, onRejected);
+  });
+}
+
+function unwantedRejectionError (stackStartFn, actual, expected, message) {
+  var actualMessage = actual && actual.message;
+  var failureMessage = 'Got unwanted rejection';
+  failureMessage += message ? ': ' + message : '.';
+  failureMessage += '\nActual message: "' + actualMessage + '"';
+  return new AssertionError({
+    actual: actual,
+    expected: expected,
+    operator: stackStartFn.name,
+    message: failureMessage,
+    stackStartFn: stackStartFn
+  });
+}
+
 function isPromiseLike (obj) {
   return obj !== null &&
     typeof obj === 'object' &&
@@ -246,6 +236,16 @@ function createComparisonMessage (actual, expected, keys, stackStartFn) {
   });
   Error.stackTraceLimit = tmpLimit;
   return err.message;
+}
+
+function ensureSettled (reject, block) {
+  return function () {
+    try {
+      return block.apply(null, slice.call(arguments));
+    } catch (e) {
+      return reject(e);
+    }
+  };
 }
 
 module.exports = {

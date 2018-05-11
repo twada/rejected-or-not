@@ -1,3 +1,13 @@
+/**
+ * rejected-or-not
+ *   Promise-based implementation of Node v10's `assert.rejects()` and `assert.doesNotReject()` for old Nodes and browsers.
+ *
+ * https://github.com/twada/rejected-or-not
+ *
+ * Copyright (c) 2018 Takuto Wada
+ * Licensed under the MIT license.
+ *   https://github.com/twada/rejected-or-not/blob/master/LICENSE
+ */
 'use strict';
 
 var AssertionError = require('assert').AssertionError;

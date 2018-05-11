@@ -5,6 +5,7 @@ Promise-based implementation of Node v10's [`assert.rejects()`](https://nodejs.o
 
 [![Build Status][travis-image]][travis-url]
 [![NPM version][npm-image]][npm-url]
+[![Code Style][style-image]][style-url]
 [![License][license-image]][license-url]
 
 *Issues and improvements should be done in [Node.js](https://github.com/nodejs/node/issues) first.*
@@ -150,6 +151,9 @@ Licensed under the [MIT](https://github.com/twada/rejected-or-not/blob/master/LI
 
 [npm-url]: https://npmjs.org/package/rejected-or-not
 [npm-image]: https://badge.fury.io/js/rejected-or-not.svg
+
+[style-url]: https://github.com/Flet/semistandard
+[style-image]: https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg
 
 [license-url]: https://github.com/twada/rejected-or-not/blob/master/LICENSE
 [license-image]: https://img.shields.io/badge/license-MIT-brightgreen.svg

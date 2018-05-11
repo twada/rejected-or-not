@@ -49,18 +49,7 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         message = errorHandler;
         errorHandler = undefined;
       }
-      var failureMessage = 'Missing expected rejection';
-      if (errorHandler && errorHandler.name) {
-        failureMessage += ' (' + errorHandler.name + ')';
-      }
-      failureMessage += message ? ': ' + message : '.';
-      return reject(new AssertionError({
-        actual: undefined,
-        expected: errorHandler,
-        operator: stackStartFn.name,
-        message: failureMessage,
-        stackStartFn: stackStartFn
-      }));
+      return reject(createMissingRejectionError(stackStartFn, errorHandler, message));
     });
     var onRejected = ensureSettled(reject, function (actualRejectionResult) {
       if (!errorHandler) {
@@ -161,6 +150,21 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
       }
     });
     thennable.then(onFulfilled, onRejected);
+  });
+}
+
+function createMissingRejectionError (stackStartFn, expected, message) {
+  var failureMessage = 'Missing expected rejection';
+  if (expected && expected.name) {
+    failureMessage += ' (' + expected.name + ')';
+  }
+  failureMessage += message ? ': ' + message : '.';
+  return new AssertionError({
+    actual: undefined,
+    expected: expected,
+    operator: stackStartFn.name,
+    message: failureMessage,
+    stackStartFn: stackStartFn
   });
 }
 

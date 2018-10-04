@@ -49,23 +49,23 @@ implementations.forEach(function (impl) {
   var doesNotReject = impl.doesNotReject;
 
   describe(name, function () {
-    describe('#rejects(block, [error], [message])', function () {
-      describe('block `<Function> | <Promise>`', function () {
-        describe('if `block` is a `<Promise>`, awaits the promise then check that the promise is rejected.', function () {
-          it('rejects with AssertionError if the `block` is not rejected.', function () {
+    describe('#rejects(promiseFn, [error], [message])', function () {
+      describe('promiseFn `<Function> | <Promise>`', function () {
+        describe('if `promiseFn` is a `<Promise>`, awaits the promise then check that the promise is rejected.', function () {
+          it('rejects with AssertionError if the `promiseFn` is not rejected.', function () {
             return rejects(willResolve('GOOD!')).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert.equal(err.message, 'Missing expected rejection.');
             });
           });
-          it('resolves if the `block` is rejected.', function () {
+          it('resolves if the `promiseFn` is rejected.', function () {
             return rejects(willReject('BOMB!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
         });
-        describe('if `block` is a `<Function>`, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
-          it('rejects with AssertionError if result of `block` function is NOT rejected.', function () {
+        describe('if `promiseFn` is a `<Function>`, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is rejected.', function () {
+          it('rejects with AssertionError if result of `promiseFn` function is NOT rejected.', function () {
             return rejects(function () {
               return willResolve('GOOD!');
             }).then(shouldNotBeFulfilled, function (err) {
@@ -73,14 +73,14 @@ implementations.forEach(function (impl) {
               assert.equal(err.message, 'Missing expected rejection.');
             });
           });
-          it('resolves if result of `block` function is rejected.', function () {
+          it('resolves if result of `promiseFn` function is rejected.', function () {
             return rejects(function () {
               return willReject('BOMB!');
             }).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
-          it('if `block` is a function and it throws an error synchronously, `rejects()` will return a rejected Promise with that error.', function () {
+          it('if `promiseFn` is a function and it throws an error synchronously, `rejects()` will return a rejected Promise with that error.', function () {
             return rejects(function () {
               throw new Error('synchronous error');
             }).then(shouldNotBeFulfilled, function (err) {
@@ -88,36 +88,36 @@ implementations.forEach(function (impl) {
               assert(err.message === 'synchronous error');
             });
           });
-          it('if the `block` function does not return a promise, `rejects()` will return a rejected Promise with `ERR_INVALID_RETURN_VALUE` TypeError.', function () {
+          it('if the `promiseFn` function does not return a promise, `rejects()` will return a rejected Promise with `ERR_INVALID_RETURN_VALUE` TypeError.', function () {
             return rejects(function () {
               return 'not a Promise';
             }).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_RETURN_VALUE');
-              assert.equal(err.message, 'Expected instance of Promise to be returned from the "block" function but got instance of String.');
+              assert.equal(err.message, 'Expected instance of Promise to be returned from the "promiseFn" function but got instance of String.');
             });
           });
         });
-        describe('if type of `block` is other than `<Promise>` or `<Function>`, `rejects()` will return a rejected Promise with `ERR_INVALID_ARG_TYPE` TypeError.', function () {
+        describe('if type of `promiseFn` is other than `<Promise>` or `<Function>`, `rejects()` will return a rejected Promise with `ERR_INVALID_ARG_TYPE` TypeError.', function () {
           it('string', function () {
             return rejects('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type string');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
             });
           });
           it('number', function () {
             return rejects(9999).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type number');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
             });
           });
           it('null', function () {
             return rejects(null).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type object');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
             });
           });
         });
@@ -183,7 +183,7 @@ implementations.forEach(function (impl) {
               });
             });
           });
-          it('appends `error.name` as expected error class name to the message if the `block` is not rejected.', function () {
+          it('appends `error.name` as expected error class name to the message if the `promiseFn` is not rejected.', function () {
             return rejects(
               willResolve('GOOD!'),
               TypeError
@@ -272,7 +272,7 @@ implementations.forEach(function (impl) {
               assert(err.actual === te);
             });
           });
-          it('if exists, appends `error.name` as expected error class name to the message if the `block` is not rejected.', function () {
+          it('if exists, appends `error.name` as expected error class name to the message if the `promiseFn` is not rejected.', function () {
             return rejects(
               willResolve('GOOD!'),
               {
@@ -307,7 +307,7 @@ implementations.forEach(function (impl) {
               assert(err.actual === otherErr);
             });
           });
-          it('appends `error.name` as expected error class name to the message if the `block` is not rejected.', function () {
+          it('appends `error.name` as expected error class name to the message if the `promiseFn` is not rejected.', function () {
             return rejects(
               willResolve('GOOD!'),
               new TypeError('Wrong type')
@@ -362,7 +362,7 @@ implementations.forEach(function (impl) {
         });
       });
       describe('message `<any>`', function () {
-        describe('if specified, `message` will be the message provided by the AssertionError if the `block` fails to reject.', function () {
+        describe('if specified, `message` will be the message provided by the AssertionError if the `promiseFn` fails to reject.', function () {
           it('when `error` is one of `<Class>`, `<Error>` or `<Object>` with `name` property, append it as expected error class name to the assertion message.', function () {
             return rejects(
               willResolve('GOOD!'),
@@ -425,7 +425,7 @@ implementations.forEach(function (impl) {
         });
       });
       describe('edge cases', function () {
-        it('when `error` is null, works as if `block` and `message` are given', function () {
+        it('when `error` is null, works as if `promiseFn` and `message` are given', function () {
           return rejects(
             willResolve('GOOD!'),
             null,
@@ -435,7 +435,7 @@ implementations.forEach(function (impl) {
             assert.equal(err.message, 'Missing expected rejection: MUST BE REJECTED but resolved');
           });
         });
-        it('when `error` is null and `message` is also null, works as if only `block` is given', function () {
+        it('when `error` is null and `message` is also null, works as if only `promiseFn` is given', function () {
           return rejects(
             willResolve('GOOD!'),
             null,
@@ -448,10 +448,10 @@ implementations.forEach(function (impl) {
       });
     });
 
-    describe('#doesNotReject(block, [error], [message])', function () {
-      describe('block `<Function> | <Promise>`', function () {
-        describe('if `block` is a `<Promise>`, awaits the promise then check that the promise is NOT rejected.', function () {
-          it('rejects with AssertionError if the `block` is rejected.', function () {
+    describe('#doesNotReject(promiseFn, [error], [message])', function () {
+      describe('promiseFn `<Function> | <Promise>`', function () {
+        describe('if `promiseFn` is a `<Promise>`, awaits the promise then check that the promise is NOT rejected.', function () {
+          it('rejects with AssertionError if the `promiseFn` is rejected.', function () {
             var te = new TypeError('Wrong type');
             return doesNotReject(
               willReject(te)
@@ -461,14 +461,14 @@ implementations.forEach(function (impl) {
               assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
             });
           });
-          it('resolves if the `block` is not rejected.', function () {
+          it('resolves if the `promiseFn` is not rejected.', function () {
             return doesNotReject(willResolve('GOOD!')).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
         });
-        describe('if `block` is a `<Function>`, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is NOT rejected.', function () {
-          it('rejects with AssertionError if the promise returned from `block` is rejected.', function () {
+        describe('if `promiseFn` is a `<Function>`, immediately calls the function and awaits the returned promise to complete. It will then check that the promise is NOT rejected.', function () {
+          it('rejects with AssertionError if the promise returned from `promiseFn` is rejected.', function () {
             var te = new TypeError('Wrong type');
             return doesNotReject(function () {
               return willReject(te);
@@ -478,14 +478,14 @@ implementations.forEach(function (impl) {
               assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong type"');
             });
           });
-          it('resolves if the promise returned from `block` is not rejected.', function () {
+          it('resolves if the promise returned from `promiseFn` is not rejected.', function () {
             return doesNotReject(function () {
               return willResolve('GOOD!');
             }).then(function () {
               assert(true);
             }, shouldNotBeRejected);
           });
-          it('if `block` is a function and it throws an error synchronously, `doesNotReject()` will return a rejected Promise with that error.', function () {
+          it('if `promiseFn` is a function and it throws an error synchronously, `doesNotReject()` will return a rejected Promise with that error.', function () {
             return doesNotReject(function () {
               throw new Error('synchronous error');
             }).then(shouldNotBeFulfilled, function (err) {
@@ -499,30 +499,30 @@ implementations.forEach(function (impl) {
             }).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_RETURN_VALUE');
-              assert.equal(err.message, 'Expected instance of Promise to be returned from the "block" function but got instance of String.');
+              assert.equal(err.message, 'Expected instance of Promise to be returned from the "promiseFn" function but got instance of String.');
             });
           });
         });
-        describe('if type of `block` is other than `<Promise>` or `<Function>`, `doesNotReject()` will return a rejected Promise with an `ERR_INVALID_ARG_TYPE` TypeError.', function () {
+        describe('if type of `promiseFn` is other than `<Promise>` or `<Function>`, `doesNotReject()` will return a rejected Promise with an `ERR_INVALID_ARG_TYPE` TypeError.', function () {
           it('string', function () {
             return doesNotReject('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type string');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
             });
           });
           it('number', function () {
             return doesNotReject(9999).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type number');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
             });
           });
           it('null', function () {
             return doesNotReject(null).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "block" argument must be one of type Function or Promise. Received type object');
+              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
             });
           });
         });

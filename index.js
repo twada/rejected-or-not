@@ -14,40 +14,40 @@ var AssertionError = require('assert').AssertionError;
 var deepStrictEqual = require('universal-deep-strict-equal');
 var slice = Array.prototype.slice;
 
-function rejects (block, error, message) {
-  if (!(typeof block === 'function' || isPromiseLike(block))) {
-    return rejectWithInvalidArgType('block', 'Function or Promise', block);
+function rejects (promiseFn, error, message) {
+  if (!(typeof promiseFn === 'function' || isPromiseLike(promiseFn))) {
+    return rejectWithInvalidArgType('promiseFn', 'Function or Promise', promiseFn);
   }
   if (typeof error === 'string' && arguments.length === 3) {
     return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
   }
-  if (isPromiseLike(block)) {
-    return wantReject(rejects, block, error, message);
+  if (isPromiseLike(promiseFn)) {
+    return wantReject(rejects, promiseFn, error, message);
   }
-  var ret = block();
+  var ret = promiseFn();
   if (isPromiseLike(ret)) {
     return wantReject(rejects, ret, error, message);
   } else {
-    return rejectWithInvalidReturnValue('block', ret);
+    return rejectWithInvalidReturnValue('promiseFn', ret);
   }
 }
 
-function doesNotReject (block, error, message) {
-  if (!(typeof block === 'function' || isPromiseLike(block))) {
-    return rejectWithInvalidArgType('block', 'Function or Promise', block);
+function doesNotReject (promiseFn, error, message) {
+  if (!(typeof promiseFn === 'function' || isPromiseLike(promiseFn))) {
+    return rejectWithInvalidArgType('promiseFn', 'Function or Promise', promiseFn);
   }
   if (typeof error === 'string') {
     message = error;
     error = undefined;
   }
-  if (isPromiseLike(block)) {
-    return doesNotWantReject(doesNotReject, block, error, message);
+  if (isPromiseLike(promiseFn)) {
+    return doesNotWantReject(doesNotReject, promiseFn, error, message);
   }
-  var ret = block();
+  var ret = promiseFn();
   if (isPromiseLike(ret)) {
     return doesNotWantReject(doesNotReject, ret, error, message);
   } else {
-    return rejectWithInvalidReturnValue('block', ret);
+    return rejectWithInvalidReturnValue('promiseFn', ret);
   }
 }
 
@@ -256,10 +256,10 @@ function isPromiseLike (obj) {
     typeof obj.catch === 'function';
 }
 
-function ensureSettled (reject, block) {
+function ensureSettled (reject, promiseFn) {
   return function () {
     try {
-      return block.apply(null, slice.call(arguments));
+      return promiseFn.apply(null, slice.call(arguments));
     } catch (e) {
       return reject(e);
     }

@@ -3,6 +3,7 @@
 delete require.cache[require.resolve('..')];
 var rejectedOrNot = require('..');
 var assert = require('assert');
+var semver = require('semver');
 
 var implementations = [
   {
@@ -11,7 +12,8 @@ var implementations = [
     doesNotReject: rejectedOrNot.doesNotReject
   }
 ];
-if (typeof assert.rejects === 'function') {
+var node8rejects = semver.satisfies(process.version, '>= 8.13.0 < 9');
+if (typeof assert.rejects === 'function' && !node8rejects) {
   implementations.push({
     name: 'official implementation',
     rejects: assert.rejects,

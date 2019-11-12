@@ -78,7 +78,13 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         if (errorHandler.test(actualRejectionResult)) {
           return resolve();
         } else {
-          return reject(actualRejectionResult);
+          return reject(new AssertionError({
+            actual: actualRejectionResult,
+            expected: errorHandler,
+            message: message || 'The input did not match the regular expression ' + errorHandler + '. Input:\n\n\'' + actualRejectionResult + '\'\n',
+            operator: stackStartFn.name,
+            stackStartFn: stackStartFn
+          }));
         }
       }
       if (typeof errorHandler === 'function') {

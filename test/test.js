@@ -134,15 +134,29 @@ implementations.forEach(function (impl) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
-          it('when messages does not match, rejects with the actual error.', function () {
-            return rejects(
-              willReject(new TypeError('the original error message')),
-              /^will not match$/
-            ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof TypeError);
-              assert.equal(err.message, 'the original error message');
+          // improvement of regular expression validation introduced in Node 12.5.0
+          // see: https://github.com/nodejs/node/commit/ef8f147b7e
+          if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.5.0')) {
+            it('when message does not match, rejects with the actual error.', function () {
+              return rejects(
+                willReject(new TypeError('the original error message')),
+                 /^will not match$/
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof TypeError);
+                assert.equal(err.message, 'the original error message');
+              });
             });
-          });
+          } else {
+            it('when message does not match, rejects with AssertionError.', function () {
+              return rejects(
+                willReject(new TypeError('the original error message')),
+                /^will not match$/
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert.equal(err.message, "The input did not match the regular expression /^will not match$/. Input:\n\n'TypeError: the original error message'\n");
+              });
+            });
+          }
         });
         describe('if `error` is a `<Class>` (constructor function), validate instanceof using constructor (works well with ES2015 classes that extends Error).', function () {
           it('when actual error is an instanceof `<Class>`, resolves with undefined.', function () {

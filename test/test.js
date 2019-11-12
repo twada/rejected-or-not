@@ -84,10 +84,10 @@ implementations.forEach(function (impl) {
           });
           it('if `promiseFn` is a function and it throws an error synchronously, `rejects()` will return a rejected Promise with that error.', function () {
             return rejects(function () {
-              throw new Error('synchronous error');
+              throw new RangeError('synchronous range error');
             }).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
-              assert(err.message === 'synchronous error');
+              assert(err instanceof RangeError);
+              assert(err.message === 'synchronous range error');
             });
           });
           it('if the `promiseFn` function does not return a promise, `rejects()` will return a rejected Promise with `ERR_INVALID_RETURN_VALUE` TypeError.', function () {
@@ -128,18 +128,18 @@ implementations.forEach(function (impl) {
         describe('if `error` is a `<RegExp>`, validate rejected actual error message using RegExp. Using a regular expression runs `.toString()` on the actual error object, and will therefore also include the error name.', function () {
           it('when message matches, resolves with undefined.', function () {
             return rejects(
-              willReject(new Error('Wrong value')),
-              /^Error: Wrong value$/
+              willReject(new TypeError('Wrong type')),
+              /^TypeError: Wrong type$/
             ).then(function (nothing) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
           it('when messages does not match, rejects with the actual error.', function () {
             return rejects(
-              willReject(new Error('the original error message')),
+              willReject(new TypeError('the original error message')),
               /^will not match$/
             ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
+              assert(err instanceof TypeError);
               assert.equal(err.message, 'the original error message');
             });
           });
@@ -155,10 +155,10 @@ implementations.forEach(function (impl) {
           });
           it('when actual error is NOT an instanceof `<Class>`, rejects with the actual error.', function () {
             return rejects(
-              willReject(new Error('the original error message')),
-              TypeError
+              willReject(new TypeError('the original error message')),
+              RangeError
             ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
+              assert(err instanceof TypeError);
               assert.equal(err.message, 'the original error message');
             });
           });
@@ -198,9 +198,9 @@ implementations.forEach(function (impl) {
         describe('if `error` is a `<Function>`, run custom validation against actual rejection result.', function () {
           it('when validation function returns `true`, resolves with undefined.', function () {
             return rejects(
-              willReject(new Error('Wrong value')),
+              willReject(new RangeError('Wrong range')),
               function (err) {
-                return ((err instanceof Error) && /value/.test(err));
+                return ((err instanceof RangeError) && /range/.test(err));
               }
             ).then(function (nothing) {
               assert(nothing === undefined);
@@ -208,17 +208,17 @@ implementations.forEach(function (impl) {
           });
           it('when returned value of validation function is NOT `true`, rejects with the actual error.', function () {
             return rejects(
-              willReject(new Error('the original error message')),
+              willReject(new RangeError('Wrong range')),
               function (err) {
                 return ((err instanceof TypeError) && /type/.test(err));
               }
             ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
-              assert.equal(err.message, 'the original error message');
+              assert(err instanceof RangeError);
+              assert.equal(err.message, 'Wrong range');
             });
           });
           it('if Error is thrown from validation function, rejects with the error.', function () {
-            var e = new Error('the original error message');
+            var e = new RangeError('the original error message');
             var te = new TypeError('some programming error');
             return rejects(
               willReject(e),
@@ -299,7 +299,7 @@ implementations.forEach(function (impl) {
             }, shouldNotBeRejected);
           });
           it('when some of the properties are not same, rejects with AssertionError.', function () {
-            var otherErr = new Error('Not found');
+            var otherErr = new RangeError('Not found');
             otherErr.code = 404;
             return rejects(
               willReject(otherErr),
@@ -403,7 +403,7 @@ implementations.forEach(function (impl) {
             });
           });
           it('when `error` is an `<Error>` and comparison fails, rejects AssertionError with specified failure message', function () {
-            var e = new Error('Wrong value');
+            var e = new RangeError('Wrong range');
             return rejects(
               willReject(e),
               new TypeError('Wrong type'),
@@ -489,10 +489,10 @@ implementations.forEach(function (impl) {
           });
           it('if `promiseFn` is a function and it throws an error synchronously, `doesNotReject()` will return a rejected Promise with that error.', function () {
             return doesNotReject(function () {
-              throw new Error('synchronous error');
+              throw new RangeError('synchronous range error');
             }).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
-              assert(err.message === 'synchronous error');
+              assert(err instanceof RangeError);
+              assert(err.message === 'synchronous range error');
             });
           });
           it('if the function does not return a promise, `doesNotReject()` will return a rejected Promise with an `ERR_INVALID_RETURN_VALUE` TypeError.', function () {
@@ -532,10 +532,10 @@ implementations.forEach(function (impl) {
       describe('error `<RegExp> | <Class> | <Function>`', function () {
         describe('if `error` is a `<RegExp>`, validate rejected error message using RegExp. Using a regular expression runs `.toString()` on the error object, and will therefore also include the error name.', function () {
           it('when message matches, rejects with AssertionError.', function () {
-            var e = new Error('Should not happen');
+            var e = new RangeError('Should not happen');
             return doesNotReject(
               willReject(e),
-              /^Error: Should not happen$/
+              /^RangeError: Should not happen$/
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === e);
@@ -567,13 +567,13 @@ implementations.forEach(function (impl) {
             });
           });
           it('when rejected error is NOT an instanceof `<Class>`, rejects with the actual error.', function () {
-            var e = new Error('the original error message');
+            var e = new RangeError('Wrong range');
             return doesNotReject(
               willReject(e),
               TypeError
             ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
-              assert.equal(err.message, 'the original error message');
+              assert(err instanceof RangeError);
+              assert.equal(err.message, 'Wrong range');
             });
           });
           describe('works well with ES2015 class that extends Error', function () {
@@ -605,33 +605,33 @@ implementations.forEach(function (impl) {
         });
         describe('if `error` is a `<Function>`, run custom validation against rejection result.', function () {
           it('when validation function returns `true`, rejects with AssertionError.', function () {
-            var e = new Error('Wrong value');
+            var e = new RangeError('Wrong range');
             return doesNotReject(
               willReject(e),
               function (err) {
-                return ((err instanceof Error) && /value/.test(err));
+                return ((err instanceof RangeError) && /range/.test(err));
               }
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === e);
-              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong range"');
             });
           });
           it('when returned value of validation function is NOT `true`, rejects with the actual error.', function () {
-            var e = new Error('the original error message');
+            var e = new RangeError('Wrong range');
             return doesNotReject(
               willReject(e),
               function (err) {
                 return ((err instanceof TypeError) && /type/.test(err));
               }
             ).then(shouldNotBeFulfilled, function (err) {
-              assert(err instanceof Error);
+              assert(err instanceof RangeError);
               assert(err === e);
-              assert.equal(err.message, 'the original error message');
+              assert.equal(err.message, 'Wrong range');
             });
           });
           it('if Error is thrown from validation function, rejects with the error.', function () {
-            var e = new Error('the original error message');
+            var e = new RangeError('Wrong range');
             var te = new TypeError('some programming error');
             return doesNotReject(
               willReject(e),
@@ -645,14 +645,14 @@ implementations.forEach(function (impl) {
             });
           });
           it('validation function can be an arrow function.', function () {
-            var e = new Error('Wrong value');
+            var e = new RangeError('Wrong range');
             return doesNotReject(
               willReject(e),
-              (err) => ((err instanceof Error) && /value/.test(err))
+              (err) => ((err instanceof RangeError) && /range/.test(err))
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof assert.AssertionError);
               assert(err.actual === e);
-              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong value"');
+              assert.equal(err.message, 'Got unwanted rejection.\nActual message: "Wrong range"');
             });
           });
         });
@@ -686,7 +686,7 @@ implementations.forEach(function (impl) {
         describe('if type of `error` is other than `<RegExp>` or `<Function>` (including `<Class>`)', function () {
           it('number', function () {
             return doesNotReject(
-              willReject(new Error('Wrong value')),
+              willReject(new RangeError('Wrong range')),
               9999
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);

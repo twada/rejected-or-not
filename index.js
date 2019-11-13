@@ -99,10 +99,17 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
             return reject(actualRejectionResult);
           }
         }
-        if (errorHandler.call({}, actualRejectionResult) === true) {
+        var handlerFuncResult = errorHandler.call({}, actualRejectionResult);
+        if (handlerFuncResult === true) {
           return resolve();
         } else {
-          return reject(actualRejectionResult);
+          return reject(new AssertionError({
+            actual: actualRejectionResult,
+            expected: errorHandler,
+            message: message || 'The validation function is expected to return "true". Received ' + handlerFuncResult + '\n\nCaught error:\n\n' + actualRejectionResult,
+            operator: stackStartFn.name,
+            stackStartFn: stackStartFn
+          }));
         }
       }
       if (typeof errorHandler === 'object') {

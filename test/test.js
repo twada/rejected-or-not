@@ -179,19 +179,8 @@ implementations.forEach(function (impl) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
-          // Node 13
-          if (impl.name === 'official implementation' && semver.satisfies(process.version, '>= 13.0.0')) {
-            it('when actual error is NOT an instanceof `<Class>`, rejects with AssertionError.', function () {
-              return rejects(
-                willReject(new TypeError('the original error message')),
-                RangeError
-              ).then(shouldNotBeFulfilled, function (err) {
-                assert(err instanceof assert.AssertionError);
-                assert(/The error is expected to be an instance of "RangeError". Received "TypeError"/.test(err.message));
-                assert(/the original error message/.test(err.message));
-              });
-            });
-          } else {
+          // < Node13
+          if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 13.0.0')) {
             it('when actual error is NOT an instanceof `<Class>`, rejects with the actual error.', function () {
               return rejects(
                 willReject(new TypeError('the original error message')),
@@ -199,6 +188,20 @@ implementations.forEach(function (impl) {
               ).then(shouldNotBeFulfilled, function (err) {
                 assert(err instanceof TypeError);
                 assert.equal(err.message, 'the original error message');
+              });
+            });
+          } else {
+            it('when actual error is NOT an instanceof `<Class>`, rejects with AssertionError.', function () {
+              var te = new TypeError('the original error message');
+              return rejects(
+                willReject(te),
+                RangeError
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert.equal(err.actual, te);
+                assert.equal(err.expected, RangeError);
+                assert(/The error is expected to be an instance of "RangeError". Received "TypeError"/.test(err.message));
+                assert(/the original error message/.test(err.message));
               });
             });
           }
@@ -215,19 +218,8 @@ implementations.forEach(function (impl) {
                 assert(nothing === undefined);
               }, shouldNotBeRejected);
             });
-            // Node 13
-            if (impl.name === 'official implementation' && semver.satisfies(process.version, '>= 13.0.0')) {
-              it('unmatch case, rejects with AssertionError.', function () {
-                return rejects(
-                  willReject(new AnotherES2015Error('bar')),
-                  ES2015Error
-                ).then(shouldNotBeFulfilled, function (err) {
-                  assert(err instanceof assert.AssertionError);
-                  assert(/The error is expected to be an instance of "ES2015Error". Received "AnotherES2015Error"/.test(err.message));
-                  assert(/bar/.test(err.message));
-                });
-              });
-            } else {
+            // < Node13
+            if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 13.0.0')) {
               it('unmatch case, rejects with the original error.', function () {
                 return rejects(
                   willReject(new AnotherES2015Error('bar')),
@@ -235,6 +227,20 @@ implementations.forEach(function (impl) {
                 ).then(shouldNotBeFulfilled, function (err) {
                   assert(err instanceof AnotherES2015Error);
                   assert.equal(err.message, 'bar');
+                });
+              });
+            } else {
+              it('unmatch case, rejects with AssertionError.', function () {
+                var another = new AnotherES2015Error('bar');
+                return rejects(
+                  willReject(another),
+                  ES2015Error
+                ).then(shouldNotBeFulfilled, function (err) {
+                  assert(err instanceof assert.AssertionError);
+                  assert.equal(err.actual, another);
+                  assert.equal(err.expected, ES2015Error);
+                  assert(/The error is expected to be an instance of "ES2015Error". Received "AnotherES2015Error"/.test(err.message));
+                  assert(/bar/.test(err.message));
                 });
               });
             }
@@ -260,21 +266,8 @@ implementations.forEach(function (impl) {
               assert(nothing === undefined);
             }, shouldNotBeRejected);
           });
-          // Node 13
-          if (impl.name === 'official implementation' && semver.satisfies(process.version, '>= 13.0.0')) {
-            it('when returned value of validation function is NOT `true`, rejects with AssertionError.', function () {
-              return rejects(
-                willReject(new RangeError('Wrong range')),
-                function (err) {
-                  return ((err instanceof TypeError) && /type/.test(err));
-                }
-              ).then(shouldNotBeFulfilled, function (err) {
-                assert(err instanceof assert.AssertionError);
-                assert(/The validation function is expected to return "true". Received false/.test(err.message));
-                assert(/RangeError: Wrong range/.test(err.message));
-              });
-            });
-          } else {
+          // < Node13
+          if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 13.0.0')) {
             it('when returned value of validation function is NOT `true`, rejects with the actual error.', function () {
               return rejects(
                 willReject(new RangeError('Wrong range')),
@@ -284,6 +277,22 @@ implementations.forEach(function (impl) {
               ).then(shouldNotBeFulfilled, function (err) {
                 assert(err instanceof RangeError);
                 assert.equal(err.message, 'Wrong range');
+              });
+            });
+          } else {
+            it('when returned value of validation function is NOT `true`, rejects with AssertionError.', function () {
+              var e = new RangeError('Wrong range');
+              return rejects(
+                willReject(e),
+                function (err) {
+                  return ((err instanceof TypeError) && /type/.test(err));
+                }
+              ).then(shouldNotBeFulfilled, function (err) {
+                assert(err instanceof assert.AssertionError);
+                assert.equal(err.actual, e);
+                // assert.equal(err.expected, handler);
+                assert(/The validation function is expected to return "true". Received false/.test(err.message));
+                assert(/RangeError: Wrong range/.test(err.message));
               });
             });
           }

@@ -1,7 +1,7 @@
 {
   "name": "rejected-or-not",
   "description": "Promise-based implementation of Node v10's assert.rejects() and assert.doesNotReject() for old Nodes and browsers",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "author": {
     "name": "Takuto Wada",
     "email": "takuto.wada@gmail.com",

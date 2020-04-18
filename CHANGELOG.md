@@ -1,3 +1,12 @@
+## [1.1.0](https://github.com/twada/rejected-or-not/releases/tag/v1.1.0) (2020-04-18)
+
+
+#### Features
+
+* [Sync with improvement of regex validation introduced in Node 12.5.0](https://github.com/twada/rejected-or-not/pull/1)
+* [Sync with upstream changes in ERR_INVALID_ARG_TYPE message](https://github.com/twada/rejected-or-not/pull/3)
+
+
 ### [1.0.1](https://github.com/twada/rejected-or-not/releases/tag/v1.0.1) (2018-10-05)
 
 

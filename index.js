@@ -16,10 +16,10 @@ var slice = Array.prototype.slice;
 
 function rejects (promiseFn, error, message) {
   if (!(typeof promiseFn === 'function' || isPromiseLike(promiseFn))) {
-    return rejectWithInvalidArgType('promiseFn', 'Function or Promise', promiseFn);
+    return rejectWithInvalidArgType('promiseFn', 'function or an instance of Promise', promiseFn);
   }
   if (typeof error === 'string' && arguments.length === 3) {
-    return rejectWithInvalidArgType('error', 'Object, Error, Function, or RegExp', error);
+    return rejectWithInvalidArgType('error', 'function or an instance of Error, RegExp, or Object', error);
   }
   if (isPromiseLike(promiseFn)) {
     return wantReject(rejects, promiseFn, error, message);
@@ -34,7 +34,7 @@ function rejects (promiseFn, error, message) {
 
 function doesNotReject (promiseFn, error, message) {
   if (!(typeof promiseFn === 'function' || isPromiseLike(promiseFn))) {
-    return rejectWithInvalidArgType('promiseFn', 'Function or Promise', promiseFn);
+    return rejectWithInvalidArgType('promiseFn', 'function or an instance of Promise', promiseFn);
   }
   if (typeof error === 'string') {
     message = error;
@@ -162,7 +162,7 @@ function doesNotWantReject (stackStartFn, thennable, errorHandler, message) {
           return reject(actualRejectionResult);
         }
       } else {
-        return reject(createInvalidArgTypeError('expected', 'Function or RegExp', errorHandler));
+        return reject(createInvalidArgTypeError('expected', 'function or an instance of RegExp', errorHandler));
       }
     });
     thennable.then(onFulfilled, onRejected);
@@ -205,7 +205,8 @@ function createAmbiguousArgumentError (msg) {
 }
 
 function createInvalidArgTypeError (argName, typeNames, actualArg) {
-  var te = new TypeError('The "' + argName + '" argument must be one of type ' + typeNames + '. Received type ' + typeof actualArg);
+  var actualArgDesc = actualArg === null ? 'null' : 'type ' + typeof actualArg;
+  var te = new TypeError('The "' + argName + '" argument must be of type ' + typeNames + '. Received ' + actualArgDesc);
   te.code = 'ERR_INVALID_ARG_TYPE';
   return te;
 }

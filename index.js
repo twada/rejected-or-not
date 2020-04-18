@@ -96,13 +96,27 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
             // Dealing with ES2015 class that extends Error
             // see: https://github.com/nodejs/node/issues/3188
             // see: https://github.com/nodejs/node/pull/4166
-            return reject(actualRejectionResult);
+            return reject(new AssertionError({
+              actual: actualRejectionResult,
+              expected: errorHandler,
+              message: message || 'The error is expected to be an instance of "' + errorHandler.name + '". Received "' + actualRejectionResult.constructor.name + '"\n\nError message:\n\n' + actualRejectionResult.message,
+              operator: stackStartFn.name,
+              stackStartFn: stackStartFn
+            }));
           }
         }
-        if (errorHandler.call({}, actualRejectionResult) === true) {
+        var handlerFuncResult = errorHandler.call({}, actualRejectionResult);
+        if (handlerFuncResult === true) {
           return resolve();
         } else {
-          return reject(actualRejectionResult);
+          var validationFunctionName = errorHandler.name ? 'The "' + errorHandler.name + '" validation function' : 'The validation function';
+          return reject(new AssertionError({
+            actual: actualRejectionResult,
+            expected: errorHandler,
+            message: message || validationFunctionName + ' is expected to return "true". Received ' + handlerFuncResult + '\n\nCaught error:\n\n' + actualRejectionResult,
+            operator: stackStartFn.name,
+            stackStartFn: stackStartFn
+          }));
         }
       }
       if (typeof errorHandler === 'object') {

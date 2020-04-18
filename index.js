@@ -109,10 +109,11 @@ function wantReject (stackStartFn, thennable, errorHandler, message) {
         if (handlerFuncResult === true) {
           return resolve();
         } else {
+          var validationFunctionName = errorHandler.name ? 'The "' + errorHandler.name + '" validation function' : 'The validation function';
           return reject(new AssertionError({
             actual: actualRejectionResult,
             expected: errorHandler,
-            message: message || 'The validation function is expected to return "true". Received ' + handlerFuncResult + '\n\nCaught error:\n\n' + actualRejectionResult,
+            message: message || validationFunctionName + ' is expected to return "true". Received ' + handlerFuncResult + '\n\nCaught error:\n\n' + actualRejectionResult,
             operator: stackStartFn.name,
             stackStartFn: stackStartFn
           }));

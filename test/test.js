@@ -282,17 +282,19 @@ implementations.forEach(function (impl) {
           } else {
             it('when returned value of validation function is NOT `true`, rejects with AssertionError.', function () {
               var e = new RangeError('Wrong range');
+              const handlerFn = (err) => {
+                return ((err instanceof TypeError) && /type/.test(err));
+              };
               return rejects(
                 willReject(e),
-                function (err) {
-                  return ((err instanceof TypeError) && /type/.test(err));
-                }
+                handlerFn
               ).then(shouldNotBeFulfilled, function (err) {
                 assert(err instanceof assert.AssertionError);
                 assert.equal(err.actual, e);
-                // assert.equal(err.expected, handler);
-                assert(/The validation function is expected to return "true". Received false/.test(err.message));
-                assert(/RangeError: Wrong range/.test(err.message));
+                assert.equal(err.expected, handlerFn);
+
+                assert(/The "handlerFn" validation function is expected to return "true". Received false/.test(err.message), `actual [${err.message}]`);
+                assert(/RangeError: Wrong range/.test(err.message), `actual [${err.message}]`);
               });
             });
           }

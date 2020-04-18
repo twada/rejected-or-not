@@ -4,7 +4,7 @@
  *
  * https://github.com/twada/rejected-or-not
  *
- * Copyright (c) 2018 Takuto Wada
+ * Copyright (c) 2018-2020 Takuto Wada
  * Licensed under the MIT license.
  *   https://github.com/twada/rejected-or-not/blob/master/LICENSE
  */

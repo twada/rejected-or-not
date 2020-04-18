@@ -79,11 +79,11 @@ SPEC
       - when messages does not match, rejects with the actual error.
     - if `error` is a `<Class>` (constructor function), validate instanceof using constructor (works well with ES2015 classes that extends Error).
       - when actual error is an instanceof `<Class>`, resolves with undefined.
-      - when actual error is NOT an instanceof `<Class>`, rejects with the actual error.
+      - when actual error is NOT an instanceof `<Class>`, rejects with AssertionError.
       - appends `error.name` as expected error class name to the message if the `promiseFn` is not rejected.
     - if `error` is a `<Function>`, run custom validation against actual rejection result.
       - when validation function returns `true`, resolves with undefined.
-      - when returned value of validation function is NOT `true`, rejects with the actual error.
+      - when returned value of validation function is NOT `true`, rejects with AssertionError.
       - if Error is thrown from validation function, rejects with the error.
     - if `error` is an `<Object>`, that is an object where each property will be tested for.
       - when all key-value pairs in `error` are the same as key-value pairs from actual rejected result, resolves with undefined. Note that only properties on the error object will be tested.

@@ -105,21 +105,33 @@ implementations.forEach(function (impl) {
             return rejects('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
+              } else {
+                assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received type string'), `actual [${err.message}]`);
+              }
             });
           });
           it('number', function () {
             return rejects(9999).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
+              } else {
+                assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received type number'), `actual [${err.message}]`);
+              }
             });
           });
           it('null', function () {
             return rejects(null).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
+              } else {
+                assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received null'), `actual [${err.message}]`);
+              }
             });
           });
         });
@@ -351,7 +363,11 @@ implementations.forEach(function (impl) {
                 'This is clearly a mistake.'
               ).then(shouldNotBeFulfilled, function (err) {
                 assert(err instanceof TypeError);
-                assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
+                if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                  assert.equal(err.message, 'The "error" argument must be one of type Object, Error, Function, or RegExp. Received type string');
+                } else {
+                  assert(err.message.startsWith('The "error" argument must be of type function or an instance of Error, RegExp, or Object. Received type string'), `actual [${err.message}]`);
+                }
               });
             });
             it('and is identical to the message property of actual error, reject TypeError with code `ERR_AMBIGUOUS_ARGUMENT`.', function () {
@@ -524,21 +540,33 @@ implementations.forEach(function (impl) {
             return doesNotReject('not a promise or function').then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
+                if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                  assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type string');
+                } else {
+                  assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received type string'), `actual [${err.message}]`);
+                }
             });
           });
           it('number', function () {
             return doesNotReject(9999).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type number');
+              } else {
+                assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received type number'), `actual [${err.message}]`);
+              }
             });
           });
           it('null', function () {
             return doesNotReject(null).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "promiseFn" argument must be one of type Function or Promise. Received type object');
+              } else {
+                assert(err.message.startsWith('The "promiseFn" argument must be of type function or an instance of Promise. Received null'), `actual [${err.message}]`);
+              }
             });
           });
         });
@@ -705,7 +733,11 @@ implementations.forEach(function (impl) {
             ).then(shouldNotBeFulfilled, function (err) {
               assert(err instanceof TypeError);
               assert(err.code === 'ERR_INVALID_ARG_TYPE');
-              assert.equal(err.message, 'The "expected" argument must be one of type Function or RegExp. Received type number');
+              if (impl.name === 'official implementation' && semver.satisfies(process.version, '< 12.0.0')) {
+                assert.equal(err.message, 'The "expected" argument must be one of type Function or RegExp. Received type number');
+              } else {
+                assert(err.message.startsWith('The "expected" argument must be of type function or an instance of RegExp. Received type number'), `actual [${err.message}]`);
+              }
             });
           });
         });
